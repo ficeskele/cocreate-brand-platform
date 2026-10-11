@@ -5,7 +5,7 @@ import { useApp } from '../state/AppState';
 import { notifications } from '../data/mock';
 
 const consumerNav = [
-  { to: '/', label: 'Explore', icon: 'explore', end: true }, { to: '/search', label: 'Search', icon: 'search' },
+  { to: '/explore', label: 'Explore', icon: 'explore', end: false }, { to: '/search', label: 'Search', icon: 'search' },
   { to: '/contributions', label: 'Contributions', icon: 'layers' }, { to: '/earnings', label: 'Earnings', icon: 'wallet' }, { to: '/profile', label: 'Profile', icon: 'user' },
 ];
 const merchantNav = [

@@ -3,7 +3,7 @@ const B = process.env.BASE_URL ?? 'http://localhost:3456/app';
 const widths = { mobile: 390, tablet: 834, desktop: 1440 };
 const only = process.argv[2];
 const pages = [
-  ['feed', '/'], ['detail', '/i/bike-bag'], ['detail-version', '/i/bike-bag/v/bottle-pocket'],
+  ['landing', '/', async p => { for (let y = 0; y < 6000; y += 300) { await p.evaluate(v => window.scrollTo(0, v), y); await p.waitForTimeout(120); } await p.evaluate(() => window.scrollTo(0, 0)); await p.waitForTimeout(400); }], ['feed', '/explore'], ['detail', '/i/bike-bag'], ['detail-version', '/i/bike-bag/v/bottle-pocket'],
   ['signup', '/i/bike-bag', async p => { await p.getByRole('button', { name: 'Create version' }).click(); await p.waitForSelector('.modal'); }],
   ['search', '/search', async p => { await p.fill('input', 'bike bag'); }],
   ['search-empty', '/search', async p => { await p.fill('input', 'folding umbrella'); }],
@@ -19,7 +19,7 @@ async function signin(p) { await p.goto(B + '/profile'); await p.getByRole('butt
 for (const [wn, w] of Object.entries(widths)) {
   if (only && only !== wn) continue;
   const ctx = await browser.newContext({ viewport: { width: w, height: w < 700 ? 844 : 1000 }, deviceScaleFactor: 1 });
-  const p = await ctx.newPage();
+  const p = await ctx.newPage(); await p.addInitScript(() => sessionStorage.setItem('droplab-intro-seen', '1'));
   for (const [name, url, act] of pages) {
     await p.goto(B + url); await p.waitForLoadState('networkidle'); if (act) await act(p); await p.waitForTimeout(250);
     const o = await p.evaluate(() => { const over = [...document.querySelectorAll('body *')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.right > innerWidth + 1 && !e.closest('.table-wrap,.text-tabs,.tabs'); }).slice(0, 3).map(e => e.className || e.tagName); return { sw: document.documentElement.scrollWidth, iw: innerWidth, over }; });

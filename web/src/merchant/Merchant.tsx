@@ -56,7 +56,7 @@ export function SelectVersion() {
   return <Guard><div className="page">
     <Link to={`/m/i/${root.slug}`} className="back"><Icon name="back" size={18} />Merchant detail</Link>
     <header className="page-head"><h1>Choose the version</h1><p className="lede">Each version has its own votes; they are not added together.</p></header>
-    <div className="grid" role="radiogroup">{vs.map(v => <button key={v.id} role="radio" aria-checked={sel === v.id} className={`card pick${sel === v.id ? ' on' : ''}`} onClick={() => setSel(v.id)}>
+    <div className="dl-grid" role="radiogroup">{vs.map(v => <button key={v.id} role="radio" aria-checked={sel === v.id} className={`card pick${sel === v.id ? ' on' : ''}`} onClick={() => setSel(v.id)}>
       <ProductImage p={v} /><div className="card-body"><p className="tiny muted">{v.parentId ? 'Version' : 'Original'}</p><h3 className="card-title">{v.title}</h3><p className="small muted">{personName(v.author)} · {net(v)} net votes <Demo /></p>{sel === v.id && <p className="small strong"><Icon name="check" size={14} /> Selected</p>}</div></button>)}</div>
     <Button onClick={() => nav(`/m/v/${products.find(x => x.id === sel)!.slug}/rights`)}>Continue: usage rights</Button>
   </div></Guard>;
