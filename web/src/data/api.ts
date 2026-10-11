@@ -9,7 +9,8 @@ export const getUserId = () => { try { return localStorage.getItem(USER_KEY) || 
 export const setUserId = (u: string) => { try { localStorage.setItem(USER_KEY, u); } catch { /* ignore */ } };
 
 async function req<T>(method: 'GET' | 'POST', path: string, body?: unknown): Promise<T> {
-  const res = await fetch(BASE + path, { method, headers: { 'content-type': 'application/json', 'x-user-id': getUserId() }, body: body === undefined ? undefined : JSON.stringify(body) });
+  // 'ngrok-skip-browser-warning' lets API calls through ngrok's free-tier interstitial; harmless elsewhere.
+  const res = await fetch(BASE + path, { method, headers: { 'content-type': 'application/json', 'x-user-id': getUserId(), 'ngrok-skip-browser-warning': '1' }, body: body === undefined ? undefined : JSON.stringify(body) });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error((json as { error?: { message?: string } }).error?.message ?? res.statusText);
   return json as T;
