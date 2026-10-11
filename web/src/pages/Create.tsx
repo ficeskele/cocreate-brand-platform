@@ -5,17 +5,31 @@ import { rootOf, urlOf, comments as seedComments, type Product } from '../data/m
 import { Button, Chip, DerivedFrom, Empty, ProductImage } from '../components/ui';
 import { Field } from '../components/AuthModal';
 import { Icon } from '../components/Icon';
+import { api, type Prediction } from '../data/api';
 
 // Shared wizard: original idea and derived version. Draft autosaved to localStorage.
 export default function Create({ kind }: { kind: 'idea' | 'version' }) {
   const { slug } = useParams(); const [sp] = useSearchParams(); const nav = useNavigate();
-  const { products, addProduct, user, vote, requireAuth } = useApp();
+  const { products, addProduct, user, vote, requireAuth, backend, reloadApi, showToast } = useApp();
+  // "Jeeves" setup: one sentence in, the rest predicted by the backend from mock data (no model).
+  const [pred, setPred] = useState<Prediction | null>(null); const [busy, setBusy] = useState(false);
   const parent = kind === 'version' ? products.find(p => p.slug === slug) : undefined;
   const fromC = seedComments.find(c => c.id === sp.get('from'));
   const key = `droplab-draft-${kind}-${slug ?? 'new'}`;
   const init = { change: fromC?.text ?? '', reason: '', title: sp.get('title') ?? '', need: parent?.need ?? '', description: parent?.description ?? '', usage: parent?.usage ?? '', category: parent?.category ?? 'Mobility', features: parent?.features.join(', ') ?? '', price: '', freq: '', demo: '', rights: false, selfVote: false, visibility: 'Public' };
   const [d, setD] = useState<typeof init>(() => { try { return { ...init, ...JSON.parse(localStorage.getItem(key) ?? '{}') }; } catch { return init; } });
   const [step, setStep] = useState(0); const [err, setErr] = useState<Record<string, string>>({}); const [saved, setSaved] = useState(false);
+  const runPredict = async () => {
+    if (d.need.trim().length < 4) { setErr({ need: 'One sentence is enough, but give us at least a few words' }); return null; }
+    setBusy(true);
+    try {
+      const r = await api.predict(d.need.trim()); setPred(r);
+      const sp = r.product.spec;
+      setD(x => ({ ...x, title: sp.name, description: sp.concept, usage: sp.tagline, category: sp.category, features: sp.features.map(f => f.text).join(', '),
+        price: sp.price_target.max != null && sp.price_target.max <= 25 ? '< $25' : sp.price_target.max != null && sp.price_target.max <= 40 ? '$25–40' : sp.price_target.max != null && sp.price_target.max <= 60 ? '$40–60' : '> $60', rights: true }));
+      return r;
+    } catch (e) { showToast('Could not predict: ' + (e as Error).message); return null; } finally { setBusy(false); }
+  };
   useEffect(() => { localStorage.setItem(key, JSON.stringify(d)); setSaved(true); const t = setTimeout(() => setSaved(false), 1200); return () => clearTimeout(t); }, [d, key]);
   if (!user) return <div className="page narrow"><Empty icon="user" title="You need an account to create" action={<Button onClick={() => requireAuth('create', () => {})}>Create account</Button>} /></div>;
   if (kind === 'version' && !parent) return <div className="page"><Empty icon="alert" title="We could not find the original idea" /></div>;
@@ -24,13 +38,28 @@ export default function Create({ kind }: { kind: 'idea' | 'version' }) {
   const validate = () => {
     const e: Record<string, string> = {};
     if (step === 0 && kind === 'version') { if (d.change.trim().length < 10) e.change = 'Tell us what you would change (at least 10 characters)'; if (!d.reason.trim()) e.reason = 'Explain why it would serve you better'; }
-    if (step === 0 && kind === 'idea') { if (d.need.trim().length < 10) e.need = 'Describe the problem (at least 10 characters)'; }
+    if (step === 0 && kind === 'idea') { if (d.need.trim().length < 4) e.need = 'Give us at least a few words'; }
     if (step === 1) { if (!d.title.trim()) e.title = 'Give it a name'; if (!d.description.trim()) e.description = 'Add a description'; }
     if (step === 3 && !d.rights) e.rights = 'Confirm you own or have permission for the images';
     setErr(e); return !Object.keys(e).length;
   };
-  const publish = () => {
+  const publish = async () => {
     if (!validate()) return;
+    if (kind === 'idea' && backend === 'online' && pred) {
+      setBusy(true);
+      try {
+        const brands = await api.brands();
+        const brand = brands[0] ?? await api.createBrand({ name: pred.brand.name, slug: pred.brand.name.toLowerCase().replace(/[^a-z0-9\u3400-\u9fff]+/g, '-') + '-' + Date.now().toString(36), identity: pred.brand.identity });
+        const spec = { ...pred.product.spec, name: d.title || pred.product.spec.name, concept: d.description || pred.product.spec.concept, tagline: d.usage || pred.product.spec.tagline, category: d.category || pred.product.spec.category,
+          features: d.features.split(',').map(x => x.trim()).filter(Boolean).map((text, i) => ({ id: `f${i + 1}`, text })) };
+        const view = await api.createProduct(brand.id, spec.name, spec);
+        await api.postMessage(view.id, `@agent:concept ${pred.agentInstruction}`);
+        localStorage.removeItem(key); reloadApi();
+        showToast('Created on the backend. The agent is generating on arcade.ai…');
+        nav(`/i/api-${view.id}`);
+      } catch (e) { showToast('Could not create: ' + (e as Error).message); } finally { setBusy(false); }
+      return;
+    }
     const s = (parent ? parent.slug + '-' : '') + (d.title || 'new').toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 40);
     const np: Product = { id: 'u' + Date.now(), slug: s, parentId: parent?.id ?? null, title: d.title, author: 'me', category: d.category, status: 'Idea', image: parent?.image ?? `${import.meta.env.BASE_URL}renders/bottle-bag.svg`,
       need: d.need, description: d.description, usage: d.usage, change: d.change || undefined, reason: d.reason || undefined, features: d.features.split(',').map(x => x.trim()).filter(Boolean), votes: { up: 0, down: 0 }, followers: 0, createdAt: '2026-10-11',
@@ -50,15 +79,23 @@ export default function Create({ kind }: { kind: 'idea' | 'version' }) {
         <Field label="What would you change?" error={err.change}><textarea rows={3} value={d.change} onChange={set('change')} placeholder="e.g. add a separate bottle compartment" /></Field>
         <Field label="Why would that version serve you better?" error={err.reason}><textarea rows={3} value={d.reason} onChange={set('reason')} placeholder="e.g. avoid carrying a second bag on short trips" /></Field>
       </> : <>
-        <Field label="What problem do you have?" error={err.need}><textarea rows={3} value={d.need} onChange={set('need')} /></Field>
-        <Field label="How would you use the product?"><textarea rows={2} value={d.usage} onChange={set('usage')} /></Field>
+        <Field label="Describe it in one sentence" hint="That is all we need. We predict the rest; you can edit anything." error={err.need}><textarea rows={3} value={d.need} onChange={set('need')} placeholder="e.g. a pillow full of bright circus clowns to make my room go wild" /></Field>
+        {backend === 'online'
+          ? <div className="row-btns"><Button type="button" variant="secondary" disabled={busy} onClick={runPredict}><Icon name="sparkle" size={18} />{busy ? 'Predicting…' : pred ? 'Predict again' : 'Predict the rest'}</Button></div>
+          : <p className="assist"><Icon name="alert" size={16} />Backend offline: prediction unavailable, fill the fields by hand.</p>}
+        {pred && <div className="panel">
+          <h3><Icon name="sparkle" size={16} /> Predicted · confidence {Math.round(pred.confidence * 100)}%</h3>
+          <p className="small muted">{pred.basis}</p>
+          <dl className="kv"><div><dt>Name</dt><dd>{pred.product.spec.name}</dd></div><div><dt>Category</dt><dd>{pred.product.spec.category} · arcade.ai {pred.arcade.categoryName}{pred.arcade.modelId ? ` · style ${pred.arcade.modelId}` : ''}</dd></div><div><dt>Audience</dt><dd>{pred.product.spec.target_audience}</dd></div><div><dt>Features</dt><dd>{pred.product.spec.features.map(f => f.text).join(', ')}</dd></div><div><dt>Price band</dt><dd>USD {pred.product.spec.price_target.min}–{pred.product.spec.price_target.max}</dd></div><div><dt>Brand voice</dt><dd>{pred.brand.identity.voice} <span className="chips">{pred.brand.identity.palette.map(h => <span key={h} className="chip" style={{ background: h, color: '#fff', borderColor: h }}>{h}</span>)}</span></dd></div></dl>
+          <p className="tiny muted">Similar ideas used: {pred.similar.map(s => s.title).join(' · ') || 'none'}. Mock data, not a trained model.</p>
+        </div>}
       </>)}
       {step === 1 && <>
         {parent && <ProductImage p={parent} ratio="16/9" />}
         <div className="row-btns"><Button variant="secondary" type="button"><Icon name="image" size={18} />Upload image</Button><Button variant="ghost" type="button">Add reference</Button></div>
         <Field label="Name" error={err.title}><input value={d.title} onChange={set('title')} placeholder={kind === 'version' ? 'Version with a separate bottle compartment' : ''} /></Field>
         <Field label="Description" error={err.description}><textarea rows={3} value={d.description} onChange={set('description')} /></Field>
-        <Field label="Category"><select value={d.category} onChange={set('category')}>{['Mobility', 'Home', 'Garden', 'Travel'].map(c => <option key={c}>{c}</option>)}</select></Field>
+        <Field label="Category"><select value={d.category} onChange={set('category')}>{[...new Set([d.category, 'Mobility', 'Home', 'Garden', 'Travel'].filter(Boolean))].map(c => <option key={c}>{c}</option>)}</select></Field>
         <Field label="Desired features" hint="Comma-separated"><input value={d.features} onChange={set('features')} /></Field>
       </>}
       {step === 2 && <>
@@ -74,9 +111,10 @@ export default function Create({ kind }: { kind: 'idea' | 'version' }) {
         <div className="panel"><h3>Images and authorship</h3><p className="small">1 own image{parent ? ` · 1 inherited (author: ${parent.author === 'me' ? 'you' : parent.author})` : ''}</p>
           <label className={`check${err.rights ? ' has-error' : ''}`}><input type="checkbox" checked={d.rights} onChange={e => setD({ ...d, rights: e.target.checked })} />I am the author of the new images or have permission to publish them. Inherited images keep their author.</label>{err.rights && <em className="err" role="alert">{err.rights}</em>}
           <p className="tiny muted">Publishing does not authorize commercial use: each author approves it separately before an import.</p></div>
+        {kind === 'idea' && backend === 'online' && pred && <p className="assist"><Icon name="sparkle" size={16} />Publishing creates this idea on the backend and asks the agent to generate it on arcade.ai right away ({pred.arcade.categoryName}{pred.arcade.modelId ? `, ${pred.arcade.modelId}` : ''}). Takes 1 to 2 minutes.</p>}
         <label className="check"><input type="checkbox" checked={d.selfVote} onChange={e => setD({ ...d, selfVote: e.target.checked })} />Upvote this version myself (optional)</label>
       </>}
-      <div className="wizard-nav">{step > 0 && <Button variant="secondary" onClick={() => setStep(step - 1)}>Back</Button>}{step < 3 ? <Button onClick={() => validate() && setStep(step + 1)}>Next</Button> : <Button onClick={publish}>Publish {kind === 'version' ? 'version' : 'idea'}</Button>}</div>
+      <div className="wizard-nav">{step > 0 && <Button variant="secondary" onClick={() => setStep(step - 1)}>Back</Button>}{step < 3 ? <Button disabled={busy} onClick={async () => { if (!validate()) return; if (step === 0 && kind === 'idea' && backend === 'online' && !pred) { if (!(await runPredict())) return; } setStep(step + 1); }}>{busy ? 'Predicting…' : step === 0 && kind === 'idea' && backend === 'online' && !pred ? 'Predict and continue' : 'Next'}</Button> : <Button disabled={busy} onClick={publish}>{busy ? 'Creating…' : `Publish ${kind === 'version' ? 'version' : 'idea'}`}</Button>}</div>
     </div>
   );
 }

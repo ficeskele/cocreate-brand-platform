@@ -177,3 +177,17 @@ Prints a JSON summary and writes screenshots to `web/docs/screenshots/e2e-*.png`
 | Conversation messages and `@agent:concept` runs | Votes, Follow, Share counts |
 | Versions: tree children, Open proposals, Co-authors | Interest tab, royalties, Earnings |
 | Stores: Create release, Open store (arcade.ai checkout) | Merchant mode (`/app/m`), Shopify preview |
+
+---
+
+# One-sentence setup ("Jeeves" mode) in `/app`
+
+Goal: the user types one sentence; everything else is predicted and prefilled. Prediction is keyword matching against a mock corpus (`src/predict.ts`), not a trained model, so it is instant and explainable.
+
+1. Open http://localhost:3456/app/create (sign up with any name/email/password when asked).
+2. Type one sentence, e.g. `小丑抱枕，顏色超鮮豔，我要我的房間超瘋` or `a silk scarf with plum blossoms in the mist`.
+3. Click **Predict the rest** (or just **Predict and continue**). A panel shows: predicted name, category + arcade.ai category and style, audience, features, price band, brand voice and palette, confidence, and which similar ideas were used.
+4. Steps 2 and 3 are already filled; change anything or just click **Next**.
+5. **Publish idea**: creates the brand (if none) and the product on the backend, posts `@agent:concept <predicted instruction>` and opens the idea. The agent then generates on arcade.ai (1 to 2 minutes); continue with the Versiones / Tiendas steps above.
+
+API only: `curl -X POST localhost:3456/predict -H 'content-type: application/json' -d '{"text":"送女友的生日項鍊"}'`

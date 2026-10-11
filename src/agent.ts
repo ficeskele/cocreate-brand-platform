@@ -193,6 +193,7 @@ function simpleDesign(input: ProductSpec, instruction: string, categoryId: strin
     [/velvet/i, "cotton_velvet"], [/soft linen/i, "soft_linen"], [/linen/i, "linen"], [/fine cotton/i, "fine_cotton"],
   ];
   const fabric = fabricWords.find(([re]) => re.test(instruction))?.[1];
+  const style = /(?:風格用|style)\s*([a-z0-9-]+)/i.exec(instruction)?.[1] ?? "";
   const selections: Record<string, string> = { fabric: fabric ?? "canvas", size: size ? `${size[1]}x${size[2]}` : "18x18", embellishment: "none", insert: "none" };
   return {
     summary: `Simple mode (no Claude): generated an arcade.ai pattern from your words "${instruction}" and the product concept, then built a Decorative Pillow (${selections.fabric}, ${selections.size}). Text fields were not rewritten.`,
@@ -210,7 +211,7 @@ function simpleDesign(input: ProductSpec, instruction: string, categoryId: strin
     },
     arcade: {
       prompt: `${instruction}. ${input.concept}. ${input.tagline}`.slice(0, 1000),
-      modelId: "",
+      modelId: style,
       categoryId,
       selections,
     },

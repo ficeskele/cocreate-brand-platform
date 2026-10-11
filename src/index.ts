@@ -6,6 +6,7 @@ import { all, appendRevision, addMessage, getBranch, getBrand, getProduct, getRe
 import { ProductSpec, diffSpec } from "./spec.js";
 import { runConceptAgent } from "./agent.js";
 import { coauthors, createRelease, getRelease, openStore } from "./release.js";
+import { predict } from "./predict.js";
 
 type Env = { Variables: { userId: string } };
 const app = new Hono<Env>();
@@ -28,6 +29,12 @@ app.get("/", serveStatic({ path: "./public/index.html" }));
 app.get("/app", (c) => c.redirect("/app/"));
 app.use("/app/*", serveStatic({ root: "./web/dist", rewriteRequestPath: (p) => p.replace(/^\/app/, "") }));
 app.get("/app/*", serveStatic({ path: "./web/dist/index.html" })); // SPA fallback so deep links can be shared
+
+// ---- "Jeeves" setup: one sentence in, everything else predicted from mock data ----
+app.post("/predict", async (c) => {
+  const body = z.object({ text: z.string().min(2).max(500) }).parse(await c.req.json());
+  return c.json(predict(body.text));
+});
 
 // ---- brands ----
 const BrandBody = z.object({

@@ -32,7 +32,19 @@ export interface ApiProductView { id: string; brand_id: string; name: string; ma
 export interface ApiBrand { id: string; name: string; slug: string; identity: { mission: string; voice: string; palette: string[] }; created_by: string; products: { id: string; name: string }[] }
 export interface ApiAgentRun { id: string; status: 'running' | 'succeeded' | 'failed'; stage: string; error: string | null; output_proposal_id: string | null }
 
+export interface Prediction {
+  input: string; confidence: number; basis: string;
+  similar: { id: string; title: string; score: number; matched: string[] }[];
+  brand: { name: string; identity: { mission: string; voice: string; palette: string[] } };
+  product: { name: string; spec: ApiSpec & { materials: { id: string; name: string }[] } };
+  arcade: { categoryName: string; modelId: string | null; selections: Record<string, string> };
+  agentInstruction: string;
+}
+
 export const api = {
+  predict: (text: string) => req<Prediction>('POST', '/predict', { text }),
+  createBrand: (b: { name: string; slug: string; identity: { mission: string; voice: string; palette: string[] } }) => req<ApiBrand>('POST', '/brands', b),
+  createProduct: (brandId: string, name: string, spec: unknown) => req<ApiProductView>('POST', `/brands/${brandId}/products`, { name, spec }),
   brands: () => req<ApiBrand[]>('GET', '/brands'),
   product: (id: string) => req<ApiProductView>('GET', `/products/${id}`),
   revision: (id: string) => req<ApiRevision>('GET', `/revisions/${id}`),
