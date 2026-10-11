@@ -16,7 +16,7 @@ scripts/serve.sh --mock  # fallback without ANTHROPIC_API_KEY: fixed design, arc
 
 The server listens on `http://localhost:3456`. The root path serves the one-page UI (left column: brands and products; main area: product state, discussion thread with agent progress, Proposal diff and merge, Release and store). Switch between alice and bob in the top right; the API's `X-User-Id` header follows. `#product=<id>` opens a product directly.
 
-Reset data: `rm data/app.db` and restart.
+Reset data: stop the server, run `rm -f data/app.db*` (the WAL and SHM files too), and start again.
 
 ## Endpoints
 

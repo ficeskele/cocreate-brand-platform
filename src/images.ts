@@ -9,7 +9,7 @@ import path from "node:path";
 export const IMAGE_DIR = path.resolve("data/images");
 mkdirSync(IMAGE_DIR, { recursive: true });
 
-const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? "http://localhost:3000";
+const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? `http://localhost:${process.env.PORT ?? 3456}`;
 
 export async function cacheImage(url: string, name: string): Promise<string> {
   const file = `${name}.png`;

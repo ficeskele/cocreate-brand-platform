@@ -4,7 +4,7 @@
  */
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
-import { addMessage, all, appendRevision, getBrand, getProduct, getRevision, id, one, run, type BrandIdentity } from "./db.js";
+import { addMessage, all, appendRevision, getBrand, getProduct, getRevision, id, one, run, tx, type BrandIdentity } from "./db.js";
 import { ProductSpec } from "./spec.js";
 import * as arcade from "./arcade.js";
 import { cacheImage } from "./images.js";
@@ -186,11 +186,11 @@ async function designWithClaude(ctx: DesignCtx): Promise<SubmitSpec> {
  * product's concept and tagline become the arcade.ai prompt verbatim. Text fields are left untouched.
  * Size like "20x20" and a fabric keyword in the instruction are honoured; otherwise category defaults apply.
  */
-function simpleDesign(input: ProductSpec, instruction: string): SubmitSpec {
+function simpleDesign(input: ProductSpec, instruction: string, categoryId: string): SubmitSpec {
   const text = `${instruction} ${input.concept} ${input.tagline}`;
   const size = /(\d{1,2})\s*[x×]\s*(\d{1,2})/i.exec(instruction);
   const fabricWords: Array<[RegExp, string]> = [
-    [/velvet|絨/i, "cotton_velvet"], [/soft linen|軟亞麻/i, "soft_linen"], [/linen|亞麻/i, "linen"], [/fine cotton|細棉/i, "fine_cotton"],
+    [/velvet/i, "cotton_velvet"], [/soft linen/i, "soft_linen"], [/linen/i, "linen"], [/fine cotton/i, "fine_cotton"],
   ];
   const fabric = fabricWords.find(([re]) => re.test(instruction))?.[1];
   const selections: Record<string, string> = { fabric: fabric ?? "canvas", size: size ? `${size[1]}x${size[2]}` : "18x18", embellishment: "none", insert: "none" };
@@ -210,7 +210,7 @@ function simpleDesign(input: ProductSpec, instruction: string): SubmitSpec {
     arcade: {
       prompt: `${instruction}. ${input.concept}. ${input.tagline}`.slice(0, 1000),
       modelId: "",
-      categoryId: "0ef267de-f8c2-4a93-89a3-63be809f68e2",
+      categoryId,
       selections,
     },
   };
@@ -246,8 +246,12 @@ export async function runConceptAgent(runId: string) {
     // 2. design: Claude tool loop (or a canned design when AGENT_MOCK_DESIGN=1, the demo fallback)
     setRun({ stage: "designing" });
     let submitted: SubmitSpec | null = null;
+    const cats = await arcade.listCategories();
+    const styles = await arcade.listModels();
     if (process.env.AGENT_MOCK_DESIGN === "1") {
-      submitted = simpleDesign(inputSpec, agentRun.instruction);
+      const pillows = cats.find((c) => c.world === "print" && /decorative pillow/i.test(c.name)) ?? cats.find((c) => c.world === "print");
+      if (!pillows) throw new Error("arcade.ai returned no print categories");
+      submitted = simpleDesign(inputSpec, agentRun.instruction, pillows.categoryId);
       toolCalls.push({ tool: "simple_design", input: { instruction: agentRun.instruction }, output: submitted });
       setRun({ tool_calls: JSON.stringify(toolCalls) });
     } else {
@@ -255,8 +259,6 @@ export async function runConceptAgent(runId: string) {
     }
 
     // 3. announce the plan
-    const cats = await arcade.listCategories();
-    const styles = await arcade.listModels();
     const catName = cats.find((c) => c.categoryId === submitted.arcade.categoryId)?.name ?? submitted.arcade.categoryId;
     const styleName = submitted.arcade.modelId ? (styles.find((m) => m.modelId === submitted.arcade.modelId)?.name ?? submitted.arcade.modelId) : "arcade.ai auto";
     const selLabel = Object.entries(submitted.arcade.selections).map(([k, v]) => `${k}=${v}`).join(", ");
@@ -302,7 +304,7 @@ export async function runConceptAgent(runId: string) {
       price_target: { currency: arcadeProduct.unitPrice.currency, min: price, max: price },
       images,
       arcade: {
-        modelId: submitted.arcade.modelId,
+        modelId: submitted.arcade.modelId || null,
         prompt: submitted.arcade.prompt,
         patternId,
         categoryId: submitted.arcade.categoryId,
@@ -317,30 +319,38 @@ export async function runConceptAgent(runId: string) {
     // 6. branch -> revision -> proposal -> message
     const branchId = id();
     const branchName = `agent/concept/${runId.slice(0, 8)}`;
-    run(
-      "INSERT INTO branch (id, product_id, name, kind, head_revision_id, created_by_type, created_by_id) VALUES (?,?,?,?,?,?,?)",
-      branchId, product.id, branchName, "agent", agentRun.input_revision_id, "agent", "concept",
-    );
-    const revId = appendRevision({
-      branchId,
-      content: newSpec,
-      summary: submitted.summary,
-      authorType: "agent",
-      authorId: "concept",
-      onBehalfOf: agentRun.triggered_by_user_id,
-      agentRunId: runId,
-    });
     const proposalId = id();
-    run(
-      "INSERT INTO proposal (id, product_id, source_branch_id, source_revision_id, status, opened_by_type, opened_by_id, summary) VALUES (?,?,?,?,?,?,?,?)",
-      proposalId, product.id, branchId, revId, "open", "agent", "concept", submitted.summary,
-    );
+    const summary = submitted.summary;
+    const revId = tx(() => {
+      run(
+        "INSERT INTO branch (id, product_id, name, kind, head_revision_id, created_by_type, created_by_id) VALUES (?,?,?,?,?,?,?)",
+        branchId, product.id, branchName, "agent", agentRun.input_revision_id, "agent", "concept",
+      );
+      const rev = appendRevision({
+        branchId,
+        content: newSpec,
+        summary,
+        authorType: "agent",
+        authorId: "concept",
+        onBehalfOf: agentRun.triggered_by_user_id,
+        agentRunId: runId,
+      });
+      run(
+        "INSERT INTO proposal (id, product_id, source_branch_id, source_revision_id, status, opened_by_type, opened_by_id, summary) VALUES (?,?,?,?,?,?,?,?)",
+        proposalId, product.id, branchId, rev, "open", "agent", "concept", summary,
+      );
+      return rev;
+    });
     say(`${submitted.summary}\n\narcade.ai product: ${arcadeProduct.title} (${arcadeProduct.selectionLabel}), made by ${arcadeProduct.maker.name}, unit price ${arcadeProduct.unitPrice.currency} ${arcadeProduct.unitPrice.amount}. Opened Proposal ${proposalId}; please review and merge.`);
     setRun({ stage: "done", status: "succeeded", work_branch_id: branchId, output_revision_id: revId, output_proposal_id: proposalId });
   } catch (e) {
     const msg = (e as Error).message;
     console.error(`[agent ${runId}] failed:`, e);
-    setRun({ status: "failed", error: msg });
-    say(`Sorry, this design run failed: ${msg}`);
+    try {
+      setRun({ status: "failed", error: msg });
+      say(`Sorry, this design run failed: ${msg}`);
+    } catch (e2) {
+      console.error(`[agent ${runId}] could not record the failure:`, e2);
+    }
   }
 }

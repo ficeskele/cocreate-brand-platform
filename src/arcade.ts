@@ -138,12 +138,8 @@ export function getProduct(productId: string, quantity = 1) {
 export function getJob(jobId: string) {
   return call<Job>("jobs/get", { jobId });
 }
-export function createCheckout(lines: Array<{ productId: string; quantity: number }>) {
-  return call<{ checkoutId: string; checkoutUrl: string }>("checkouts/create", {
-    requestId: requestId("chk"),
-    lines,
-    dropShip: lines.some((l) => l.quantity === 1),
-  });
+export function createCheckout(lines: Array<{ productId: string; quantity: number }>, dropShip = true) {
+  return call<{ checkoutId: string; checkoutUrl: string }>("checkouts/create", { requestId: requestId("chk"), lines, dropShip });
 }
 
 /** Poll a job every `intervalMs` until it finishes. `onTick` sees each state. */

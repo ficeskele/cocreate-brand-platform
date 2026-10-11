@@ -180,7 +180,7 @@ async function api(method, path, body) {
   return json;
 }
 function toast(msg, ms = 2600) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), ms); }
-function hhmm(ts) { try { return new Date(ts.replace(" ", "T") + "Z").toLocaleTimeString("zh-Hant", { hour: "2-digit", minute: "2-digit" }); } catch { return ts; } }
+function hhmm(ts) { try { return new Date(ts.replace(" ", "T") + "Z").toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }); } catch { return ts; } }
 function who(type, id) { return type === "agent" ? `agent:${id}` : id.replace(/^u_/, ""); }
 function avatar(type, id) { const n = who(type, id); return `<div class="avatar ${type === "agent" ? "agent" : id === "u_bob" ? "bob" : ""}">${esc(type === "agent" ? "AI" : n[0].toUpperCase())}</div>`; }
 

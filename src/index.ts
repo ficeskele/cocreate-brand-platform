@@ -2,7 +2,7 @@ import { Hono, type Context } from "hono";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { z } from "zod";
-import { all, appendRevision, addMessage, getBranch, getBrand, getProduct, getRevision, id, mainHistory, one, run } from "./db.js";
+import { all, appendRevision, addMessage, getBranch, getBrand, getProduct, getRevision, id, mainHistory, one, run, tx } from "./db.js";
 import { ProductSpec, diffSpec } from "./spec.js";
 import { runConceptAgent } from "./agent.js";
 import { coauthors, createRelease, getRelease, openStore } from "./release.js";
@@ -16,18 +16,18 @@ app.use("*", async (c, next) => {
 });
 app.onError((err, c) => {
   console.error(err);
-  const status = err instanceof z.ZodError ? 400 : 500;
-  return c.json({ error: { code: err instanceof z.ZodError ? "VALIDATION" : "INTERNAL", message: err.message } }, status);
+  const code = err instanceof z.ZodError ? "VALIDATION" : err instanceof SyntaxError ? "BAD_JSON" : "INTERNAL";
+  return c.json({ error: { code, message: err.message } }, code === "INTERNAL" ? 500 : 400);
 });
 const notFound = (c: Context, what: string) => c.json({ error: { code: "NOT_FOUND", message: `${what} not found` } }, 404);
 
 app.use("/images/*", serveStatic({ root: "./data" }));
 app.get("/health", (c) => c.json({ ok: true, service: "cocreate-brand-platform", arcade: "arcade.ai", mock_design: process.env.AGENT_MOCK_DESIGN === "1", claude: Boolean(process.env.ANTHROPIC_API_KEY) }));
 app.get("/", serveStatic({ path: "./public/index.html" }));
-// DropLab web (React, build en web/dist) servido en /app/*; la página "/" no cambia.
+// DropLab web (React, built into web/dist) is served at /app/*; the "/" page is unchanged.
 app.get("/app", (c) => c.redirect("/app/"));
 app.use("/app/*", serveStatic({ root: "./web/dist", rewriteRequestPath: (p) => p.replace(/^\/app/, "") }));
-app.get("/app/*", serveStatic({ path: "./web/dist/index.html" })); // fallback SPA para URLs compartibles
+app.get("/app/*", serveStatic({ path: "./web/dist/index.html" })); // SPA fallback so deep links can be shared
 
 // ---- brands ----
 const BrandBody = z.object({
@@ -37,6 +37,7 @@ const BrandBody = z.object({
 });
 app.post("/brands", async (c) => {
   const body = BrandBody.parse(await c.req.json());
+  if (one("SELECT 1 FROM brand WHERE slug = ?", body.slug)) return c.json({ error: { code: "CONFLICT", message: `slug "${body.slug}" already exists` } }, 409);
   const brandId = id();
   run("INSERT INTO brand (id, name, slug, identity, created_by) VALUES (?,?,?,?,?)", brandId, body.name, body.slug, JSON.stringify(body.identity), c.get("userId"));
   return c.json(getBrand(brandId), 201);
@@ -59,12 +60,14 @@ app.post("/brands/:id/products", async (c) => {
   const productId = id();
   const branchId = id();
   const userId = c.get("userId");
-  run("INSERT INTO product (id, brand_id, name, main_branch_id) VALUES (?,?,?,?)", productId, brand.id, body.name, branchId);
-  run(
-    "INSERT INTO branch (id, product_id, name, kind, head_revision_id, created_by_type, created_by_id) VALUES (?,?,?,?,?,?,?)",
-    branchId, productId, "main", "main", null, "user", userId,
-  );
-  appendRevision({ branchId, content: body.spec, summary: "initial spec", authorType: "user", authorId: userId });
+  tx(() => {
+    run("INSERT INTO product (id, brand_id, name, main_branch_id) VALUES (?,?,?,?)", productId, brand.id, body.name, branchId);
+    run(
+      "INSERT INTO branch (id, product_id, name, kind, head_revision_id, created_by_type, created_by_id) VALUES (?,?,?,?,?,?,?)",
+      branchId, productId, "main", "main", null, "user", userId,
+    );
+    appendRevision({ branchId, content: body.spec, summary: "initial spec", authorType: "user", authorId: userId });
+  });
   return c.json(productView(productId), 201);
 });
 
@@ -120,7 +123,7 @@ app.post("/products/:id/messages", async (c) => {
     );
   }
   const message = addMessage({ productId: product.id, authorType: "user", authorId: userId, body: body.body, agentRunId });
-  if (agentRunId) void runConceptAgent(agentRunId);
+  if (agentRunId) runConceptAgent(agentRunId).catch((e) => console.error(`[agent ${agentRunId}] crashed:`, e));
   return c.json({ message, agent_run_id: agentRunId }, 201);
 });
 app.get("/agent-runs/:id", (c) => {
@@ -151,14 +154,12 @@ app.post("/proposals/:id/merge", (c) => {
   if (p.status !== "open") return c.json({ error: { code: "ALREADY_MERGED", message: "proposal is not open" } }, 409);
   const product = getProduct(p.product_id)!;
   const source = getRevision(p.source_revision_id)!;
-  const mergedId = appendRevision({
-    branchId: product.main_branch_id,
-    content: source.content,
-    summary: `merge: ${p.summary}`,
-    authorType: "user",
-    authorId: c.get("userId"),
+  const userId = c.get("userId");
+  const mergedId = tx(() => {
+    const revId = appendRevision({ branchId: product.main_branch_id, content: source.content, summary: `merge: ${p.summary}`, authorType: "user", authorId: userId });
+    run("UPDATE proposal SET status = 'merged', merged_revision_id = ? WHERE id = ?", revId, p.id);
+    return revId;
   });
-  run("UPDATE proposal SET status = 'merged', merged_revision_id = ? WHERE id = ?", mergedId, p.id);
   return c.json({ proposal: one("SELECT * FROM proposal WHERE id = ?", p.id), merged_revision: getRevision(mergedId), coauthors: coauthors(product.id) });
 });
 
@@ -176,5 +177,5 @@ app.post("/releases/:id/open-store", async (c) => {
   return c.json(await openStore(c.req.param("id")), 201);
 });
 
-const port = Number(process.env.PORT ?? 3000);
+const port = Number(process.env.PORT ?? 3456);
 serve({ fetch: app.fetch, port }, () => console.log(`cocreate-brand-platform on http://localhost:${port} (arcade.ai backend)`));

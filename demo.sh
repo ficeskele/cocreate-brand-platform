@@ -56,4 +56,5 @@ step "8. Open store (arcade.ai checkout)"
 curl -sf -X POST "$B/releases/$RID/open-store" -H 'x-user-id: u_alice' | jq '{checkout_url, product}'
 
 step "done"
-echo "product page: $B/products/$PID"
+echo "API: $B/products/$PID"
+echo "UI:  $B/#product=$PID"
