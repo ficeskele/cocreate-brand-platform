@@ -4,7 +4,7 @@ const B = process.env.BASE_URL ?? 'http://localhost:3456/app';
 const b = await chromium.launch(); const out = [];
 for (const w of [390, 834, 1440]) {
   const ctx = await b.newContext({ viewport: { width: w, height: w < 700 ? 844 : 1000 } }); const p = await ctx.newPage();
-  const errs = []; p.on('pageerror', e => errs.push(e.message));
+  await p.addInitScript(() => sessionStorage.setItem('droplab-intro-seen', '1')); const errs = []; p.on('pageerror', e => errs.push(e.message));
   await p.goto(B + '/'); await p.waitForSelector('[role=listbox]'); await p.waitForTimeout(600);
   await p.screenshot({ path: `docs/screenshots/landing-ring-${w}.png` });
   const stage = p.locator('[role=listbox]'); const box = await stage.boundingBox();
