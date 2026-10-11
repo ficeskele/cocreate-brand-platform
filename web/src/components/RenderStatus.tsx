@@ -79,7 +79,8 @@ export function RenderStatus({ p }: { p: Product }) {
   }, [versions, nav, showToast]);
 
   const running = runs.filter(r => r.status === 'running');
-  const failed = runs.filter(r => r.status === 'failed').slice(-2);
+  // only your own failures, and only for 10 minutes; old or other people's failed runs stay out of the way
+  const failed = runs.filter(r => r.status === 'failed' && r.by === apiUser && Date.now() - new Date(r.updated_at.replace(' ', 'T') + 'Z').getTime() < 10 * 60 * 1000).slice(-1);
   const hasImage = !/placeholder\.svg$/.test(p.image);
 
   return (

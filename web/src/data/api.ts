@@ -32,7 +32,7 @@ export interface ApiMessage { id: string; product_id: string; author_type: 'user
 export interface ApiCoauthor { type: 'user' | 'agent'; id: string; on_behalf_of: string | null; revisions: number; handle: string }
 export interface ApiProductView { id: string; brand_id: string; name: string; main_branch_id: string; created_at: string; main_head: ApiRevision | null; branches: ApiBranch[]; open_proposals: ApiProposal[]; messages: ApiMessage[] }
 export interface ApiBrand { id: string; name: string; slug: string; identity: { mission: string; voice: string; palette: string[] }; created_by: string; products: { id: string; name: string }[] }
-export interface ApiAgentRun { id: string; status: 'running' | 'succeeded' | 'failed'; stage: string; error: string | null; output_proposal_id: string | null }
+export interface ApiAgentRun { id: string; status: 'running' | 'succeeded' | 'failed'; stage: string; error: string | null; output_proposal_id: string | null; updated_at: string }
 
 export interface Prediction {
   input: string; confidence: number; basis: string;
@@ -53,7 +53,7 @@ export const api = {
   messages: (id: string) => req<ApiMessage[]>('GET', `/products/${id}/messages`),
   postMessage: (id: string, body: string) => req<{ message: ApiMessage; agent_run_id: string | null }>('POST', `/products/${id}/messages`, { body }),
   generate: (id: string, instruction: string) => req<{ message: ApiMessage; agent_run_id: string }>('POST', `/products/${id}/generate`, { instruction }),
-  agentRun: async (id: string) => { const r = await req<ApiAgentRun>('GET', `/agent-runs/${id}`); return { id: r.id, stage: r.stage, status: r.status, error: r.error }; },
+  agentRun: async (id: string) => { const r = await req<ApiAgentRun>('GET', `/agent-runs/${id}`); return { id: r.id, stage: r.stage, status: r.status, error: r.error, updated_at: r.updated_at }; },
   coauthors: (id: string) => req<ApiCoauthor[]>('GET', `/products/${id}/coauthors`),
   proposal: (id: string) => req<ApiProposal & { source: ApiRevision; main: ApiRevision | null; diff: { path: string; kind: 'added' | 'changed' | 'removed'; before?: unknown; after?: unknown }[] }>('GET', `/proposals/${id}`),
   merge: (id: string) => req<{ proposal: ApiProposal; coauthors: ApiCoauthor[] }>('POST', `/proposals/${id}/merge`),
