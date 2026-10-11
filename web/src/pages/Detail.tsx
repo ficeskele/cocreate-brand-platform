@@ -1,3 +1,4 @@
+import { LiquidMetalButton } from '@/components/ui/liquid-metal-button';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useApp } from '../state/AppState';
@@ -16,12 +17,12 @@ export default function Detail() {
   const p = products.find(x => x.slug === (vslug ?? slug));
   const [tab, setTab] = useState<T>((sp.get('tab') as T) || 'conversation');
   useEffect(() => { setTab((sp.get('tab') as T) || 'conversation'); }, [sp, p?.id]);
-  if (!p) return <div className="page"><Empty icon="alert" title="This idea does not exist or was removed" action={<Link className="btn btn-secondary" to="/">Back to Explore</Link>} /></div>;
+  if (!p) return <div className="page"><Empty icon="alert" title="This idea does not exist or was removed" action={<Link className="btn btn-secondary" to="/explore">Back to Explore</Link>} /></div>;
   const root = rootOf(p); const a = agg[p.id]; const launched = drafts.find(d => d.productId === p.id && d.launched) || (p.status === 'Launched');
   const change = (t: T) => { setTab(t); setSp(t === 'conversation' ? {} : { tab: t }, { replace: true }); };
   return (
     <div className="page detail">
-      <Link to="/" className="back"><Icon name="back" size={18} />Explore</Link>
+      <Link to="/explore" className="back"><Icon name="back" size={18} />Explore</Link>
       <div className="detail-grid">
         <div className="detail-media">{p.source === 'api' ? <RenderStatus p={p} /> : <ProductImage p={p} ratio="1/1" />}</div>
         <div className="detail-content">
@@ -31,7 +32,7 @@ export default function Detail() {
           <p className="muted">by {personName(p.author)} {p.source === 'api' ? <LiveTag /> : <Demo />}</p>
           <div className="utility-row"><VoteControl p={p} /><FollowButton p={p} /><ShareButton p={p} /></div>
           <p className="tiny muted">Votes belong to this version and are not added to others. Voting signals interest, not a purchase.</p>
-          <Button block onClick={() => requireAuth('create your version of this idea', () => nav(`/create-version/${p.slug}`))}><Icon name="branch" size={18} />Create version</Button>
+          <div className="cta-metal"><span className="lm-wrap"><LiquidMetalButton label="Create version" onClick={() => requireAuth('create your version of this idea', () => nav(`/create-version/${p.slug}`))} /></span><span className="small muted">Branch it: your version gets its own votes.</span></div>
           <section className="facts">
             {p.reason && <div><h2>What changes</h2><p>{p.change} <span className="muted">Reason: {p.reason}</span></p></div>}
             <div><h2>Need</h2><p>{p.need}</p></div>

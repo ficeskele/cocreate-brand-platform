@@ -34,7 +34,7 @@ export function Contributions() {
       <header className="page-head"><h1>Contributions</h1></header>
       <Tabs<AT> value={t} onChange={setT} items={[{ id: 'ideas', label: 'My ideas' }, { id: 'versions', label: 'Versions' }, { id: 'following', label: 'Following' }, { id: 'drafts', label: 'Drafts' }]} />
       {t === 'drafts' ? (drafts.length ? <ul className="list">{drafts.map(k => <li key={k} className="list-item"><Icon name="layers" /><span>{k.includes('version') ? 'Version of ' + k.split('-').slice(3).join('-') : 'New idea'}</span><Link to={k.includes('version') ? `/create-version/${k.split('-').slice(3).join('-')}` : '/create'}>Continue</Link></li>)}</ul> : <Empty title="No drafts" text="They are saved automatically while you write." />)
-        : list.length ? <div className="grid">{list.map(p => <IdeaCard key={p.id} p={p} />)}</div>
+        : list.length ? <div className="dl-grid">{list.map(p => <IdeaCard key={p.id} p={p} />)}</div>
         : <Empty title={t === 'following' ? 'You are not following any idea yet' : 'You have not published yet'} text={t === 'following' ? 'Following is different from voting: it notifies you about news.' : 'Search for an idea and create your version.'} action={<Link className="btn btn-secondary" to="/search">Search ideas</Link>} />}
     </div>
   );
@@ -63,7 +63,7 @@ export function Earnings() {
 }
 export function Profile() {
   const { user, mode, setMode, signOut, requireAuth, apiUser, setApiUser, backend } = useApp(); const nav = useNavigate();
-  const go = (m: 'consumer' | 'merchant') => requireAuth('switch mode', () => { setMode(m); nav(m === 'merchant' ? '/m' : '/'); });
+  const go = (m: 'consumer' | 'merchant') => requireAuth('switch mode', () => { setMode(m); nav(m === 'merchant' ? '/m' : '/explore'); });
   return (
     <div className="page narrow">
       <header className="page-head"><h1>Profile</h1></header>

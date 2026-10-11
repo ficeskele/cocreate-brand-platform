@@ -26,10 +26,10 @@ export default function Feed({ state }: { state?: 'loading' | 'error' }) {
         <nav className="text-tabs" aria-label="Sort">{tabs.map(t => <button key={t.id} className={tab === t.id ? 'on' : ''} aria-pressed={tab === t.id} onClick={() => setTab(t.id)}>{t.label}</button>)}</nav>
         <label className="select"><span className="sr">Category</span><select value={cat} onChange={e => setCat(e.target.value)}>{cats.map(c => <option key={c}>{c}</option>)}</select></label>
       </div>
-      {state === 'loading' ? <div className="grid">{[0, 1, 2].map(i => <div key={i} className="card skeleton" aria-hidden><div className="sk-img" /><div className="sk-line" /><div className="sk-line short" /></div>)}</div>
+      {state === 'loading' ? <div className="dl-grid">{[0, 1, 2].map(i => <div key={i} className="card skeleton" aria-hidden><div className="sk-img" /><div className="sk-line" /><div className="sk-line short" /></div>)}</div>
         : state === 'error' ? <Empty icon="alert" title="We could not load the ideas" text="Check your connection and try again." action={<button className="btn btn-secondary" onClick={() => location.reload()}>Retry</button>} />
         : list.length === 0 ? <Empty title="Nothing here yet" text="Try another category." />
-        : <div className="grid">{list.map(p => <IdeaCard key={p.id} p={p} />)}</div>}
+        : <div className="dl-grid">{list.map(p => <IdeaCard key={p.id} p={p} />)}</div>}
     </div>
   );
 }

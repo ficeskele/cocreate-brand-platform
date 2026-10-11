@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AppProvider } from './state/AppState';
 import { Layout } from './components/Layout';
 import Feed from './pages/Feed';
+import Landing from './pages/Landing';
 import Detail from './pages/Detail';
 import Search from './pages/Search';
 import Create from './pages/Create';
@@ -12,7 +13,8 @@ import { Empty } from './components/ui';
 export default function App() {
   return (
     <AppProvider><BrowserRouter basename="/app"><Routes><Route element={<Layout />}>
-      <Route index element={<Feed />} />
+      <Route index element={<Landing />} />
+      <Route path="explore" element={<Feed />} />
       <Route path="state/loading" element={<Feed state="loading" />} />
       <Route path="state/error" element={<Feed state="error" />} />
       <Route path="search" element={<Search />} />

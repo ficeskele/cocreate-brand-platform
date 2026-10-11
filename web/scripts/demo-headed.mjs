@@ -22,7 +22,7 @@ async function waitAgent() {
 }
 
 try {
-  await p.goto(B + '/'); await p.waitForSelector('.card .demo.live');
+  await p.goto(B + '/explore'); await p.waitForSelector('.card .demo.live');
   await say('Step 2 · Explore: Demo cards plus one Backend card (Clown Pillow, grey placeholder)'); await sleep(4000);
 
   await p.locator('.card:has(.demo.live):not(:has(.card-derived)) .card-title a').first().click();

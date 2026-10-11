@@ -8,7 +8,7 @@ const b = await chromium.launch(); const p = await b.newPage({ viewport: { width
 const errs = []; p.on('pageerror', e => errs.push(e.message));
 const out = {};
 try {
-  await p.goto(B + '/'); await p.waitForSelector('.card .demo.live');
+  await p.goto(B + '/explore'); await p.waitForSelector('.card .demo.live');
   // original (non-derived) backend idea
   await p.locator('.card:has(.demo.live):not(:has(.card-derived)) .card-title a').first().click();
   await p.waitForSelector('.threads'); out.idea = await p.locator('h1.detail-title').textContent();
