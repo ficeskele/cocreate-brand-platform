@@ -27,8 +27,9 @@ export function ApiConversation({ p }: { p: Product }) {
   );
 }
 export function ApiCoauthors({ p }: { p: Product }) {
+  const { views } = useApp(); const headId = views[p.apiId!]?.main_head?.id; // refetch after a merge moves main
   const [list, setList] = useState<ApiCoauthor[] | null>(null);
-  useEffect(() => { api.coauthors(p.apiId!).then(setList).catch(() => setList([])); }, [p.apiId]);
+  useEffect(() => { api.coauthors(p.apiId!).then(setList).catch(() => setList([])); }, [p.apiId, headId]);
   return <div className="panel"><h3>Coautores <LiveTag /></h3>{!list ? <p className="muted small">Cargando…</p> : list.length === 0 ? <p className="small muted">Sin coautores aún.</p> : <ul className="list">{list.map(c => <li key={c.type + c.id + (c.on_behalf_of ?? '')} className="list-item"><span>{c.type === 'agent' ? `Agente ${c.id}${c.on_behalf_of ? ' (por ' + who(c.on_behalf_of) + ')' : ''}` : who(c.id)}</span><span className="muted">{c.revisions} revisiones</span></li>)}</ul>}</div>;
 }
 export function ApiProposals({ p }: { p: Product }) {
