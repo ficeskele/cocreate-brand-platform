@@ -111,7 +111,7 @@ curl -s -X POST localhost:3456/brands/$BID/products -H 'content-type: applicatio
 
 ## 2. Open the app
 
-http://localhost:3456/app/
+http://localhost:3456/app/ opens the landing page (hero, wheel of top ideas, mission, CTA). Click **Explore** in the top nav, or open http://localhost:3456/app/explore directly.
 
 Expected: the "Explore" feed. Four **Demo** cards (bike bag, lamp, planter...) plus one card tagged **Backend**: "Clown Pillow" with a grey "No render yet" placeholder. The grey line under the title says "Connected to the backend".
 
