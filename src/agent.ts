@@ -186,16 +186,31 @@ async function designWithClaude(ctx: DesignCtx): Promise<SubmitSpec> {
  * product's concept and tagline become the arcade.ai prompt verbatim. Text fields are left untouched.
  * Size like "20x20" and a fabric keyword in the instruction are honoured; otherwise category defaults apply.
  */
-/** Pick the arcade.ai print category named in the instruction ("category Scarves"); default to pillows. */
+/**
+ * Pick the arcade.ai category for an instruction: an explicit "category X" wins, then a product noun
+ * (necklace, ring, earrings, scarf, lampshade...), else Decorative Pillows. Works for print and jewelry.
+ */
 async function resolveCategory(instruction: string, cats: arcade.Category[]) {
+  const text = instruction.toLowerCase();
   const wanted = /category\s+([A-Za-z][A-Za-z ]+?)\s*(?:,|$)/i.exec(instruction)?.[1]?.trim().toLowerCase();
-  const print = cats.filter((c) => c.world === "print");
-  const byName = wanted ? print.find((c) => c.name.toLowerCase() === wanted) ?? print.find((c) => c.name.toLowerCase().includes(wanted)) : undefined;
-  const cat = byName ?? print.find((c) => /decorative pillow/i.test(c.name)) ?? print[0];
-  if (!cat) throw new Error("arcade.ai returned no print categories");
-  // defaults for that category, then honour a size / fabric from the instruction only if the category offers it
+  const byName = wanted ? cats.find((c) => c.name.toLowerCase() === wanted) ?? cats.find((c) => c.name.toLowerCase().includes(wanted)) : undefined;
+  const NOUNS: Array<[RegExp, RegExp]> = [
+    [/necklace|pendant/, /pendant necklace/i], [/\bring\b/, /gemstone ring|^rings$/i], [/stud/, /stud earrings/i], [/dangle/, /dangle earrings/i], [/initial earring/, /initial earrings/i], [/earring/, /gemstone earrings/i],
+    [/scarf/, /^scarves$/i], [/lampshade|lamp/, /^drum lampshades$/i], [/duvet/, /duvets/i], [/napkin/, /napkins/i], [/placemat/, /^placemats$/i], [/runner/, /table runners/i], [/tablecloth/, /tablecloths/i],
+    [/curtain/, /curtains/i], [/quilt/, /^quilts$/i], [/tea towel|towel/, /tea towels/i], [/sham|pillowcase/, /^shams$/i], [/floor pillow|floor cushion/, /floor pillows/i], [/outdoor/, /outdoor decorative pillows/i], [/pocket square/, /pocket squares/i], [/fabric|yard/, /fabric by the yard/i],
+  ];
+  const byNoun = NOUNS.map(([word, name]) => (word.test(text) ? cats.find((c) => name.test(c.name)) : undefined)).find(Boolean);
+  const cat = byName ?? byNoun ?? cats.find((c) => /decorative pillows/i.test(c.name)) ?? cats.find((c) => c.world === "print");
+  if (!cat) throw new Error("arcade.ai returned no categories");
   const detail = await arcade.getCategory(cat.categoryId, {});
   const selections = { ...detail.selections };
+  if (cat.world === "jewelry") {
+    // jewelry options are chosen by arcade.ai from the prompt; we only pick a material to name in it
+    const metals = detail.options.find((o) => o.key === "material")?.values.filter((v) => v.available).map((v) => v.value) ?? [];
+    const pick = metals.find((m) => /silver/.test(text) && /silver/i.test(m)) ?? metals.find((m) => /rose/.test(text) && /rose/i.test(m)) ?? metals.find((m) => /white gold|platinum/.test(text) && /white gold|platinum/i.test(m)) ?? metals.find((m) => /gold/.test(text) && /yellow gold/i.test(m));
+    if (pick) selections.material = pick;
+    return { cat, selections };
+  }
   const size = /(\d{1,2})\s*[x×]\s*(\d{1,2})/i.exec(instruction);
   const fabricWords: Array<[RegExp, string]> = [[/velvet/i, "cotton_velvet"], [/soft linen/i, "soft_linen"], [/linen/i, "linen"], [/fine cotton/i, "fine_cotton"]];
   const fabric = fabricWords.find(([re]) => re.test(instruction))?.[1];
@@ -205,8 +220,8 @@ async function resolveCategory(instruction: string, cats: arcade.Category[]) {
   return { cat, selections };
 }
 
-function simpleDesign(input: ProductSpec, instruction: string, categoryId: string, categoryName: string, selections: Record<string, string>): SubmitSpec {
-  const style = /style\s*([a-z0-9-]+)/i.exec(instruction)?.[1] ?? "";
+function simpleDesign(input: ProductSpec, instruction: string, categoryId: string, categoryName: string, selections: Record<string, string>, jewelry = false): SubmitSpec {
+  const style = jewelry ? "" : (/style\s*([a-z0-9-]+)/i.exec(instruction)?.[1] ?? "");
   const sel = Object.values(selections).filter((v) => v !== "none").join(", ");
   return {
     summary: `Simple mode (no Claude): generated an arcade.ai pattern from your words "${instruction}" and the product concept, then built a ${categoryName}${sel ? ` (${sel})` : ""}. Text fields were not rewritten.`,
@@ -223,7 +238,10 @@ function simpleDesign(input: ProductSpec, instruction: string, categoryId: strin
       sourcing_notes: input.sourcing_notes || "Made to order by an arcade.ai partner artisan, from a single unit.",
     },
     arcade: {
-      prompt: `${instruction}. ${input.concept}. ${input.tagline}`.slice(0, 1000),
+      // jewelry: arcade.ai reads the piece and its options (metal) from the prompt; the "style/category" hints are ours, strip them
+      prompt: (jewelry
+        ? `${instruction.replace(/,?\s*(style|category)\s+[^,]+/gi, "")}. ${input.concept}${selections.material ? `. Made in ${selections.material}.` : ""}`
+        : `${instruction}. ${input.concept}. ${input.tagline}`).slice(0, 1000),
       modelId: style,
       categoryId,
       selections,
@@ -265,7 +283,7 @@ export async function runConceptAgent(runId: string) {
     const styles = await arcade.listModels();
     if (process.env.AGENT_MOCK_DESIGN === "1") {
       const { cat, selections } = await resolveCategory(agentRun.instruction, cats);
-      submitted = simpleDesign(inputSpec, agentRun.instruction, cat.categoryId, cat.name, selections);
+      submitted = simpleDesign(inputSpec, agentRun.instruction, cat.categoryId, cat.name, selections, cat.world === "jewelry");
       toolCalls.push({ tool: "simple_design", input: { instruction: agentRun.instruction }, output: submitted });
       setRun({ tool_calls: JSON.stringify(toolCalls) });
     } else {
@@ -278,27 +296,40 @@ export async function runConceptAgent(runId: string) {
     const selLabel = Object.entries(submitted.arcade.selections).map(([k, v]) => `${k}=${v}`).join(", ");
     say(`Design done. I will generate the pattern on arcade.ai in the "${styleName}" style and make it a ${catName} (${selLabel}). Generation takes about 1 to 2 minutes.`);
 
-    // 4. generate on arcade.ai: pattern, then product with the chosen selections
+    // 4. generate on arcade.ai
     setRun({ stage: "generating" });
-    const patJob = await arcade.createPattern({ prompt: submitted.arcade.prompt, modelId: submitted.arcade.modelId });
-    setRun({ arcade_job_id: patJob.jobId });
-    const patDone = await arcade.pollJob(patJob.jobId);
-    const patternId = patDone.result?.patternId;
-    if (!patternId) throw new Error("arcade.ai pattern job succeeded without a patternId");
+    const isJewelry = cats.find((c) => c.categoryId === submitted.arcade.categoryId)?.world === "jewelry";
+    let patternId: string | undefined;
+    let productId: string | undefined;
+    if (isJewelry) {
+      // Jewelry (docs: jewelry-quickstart): patterns/create with the jewelry categoryId and no modelId;
+      // one job yields the design and its product. products/create and refines refuse jewelry designs.
+      const job = await arcade.createPattern({ prompt: submitted.arcade.prompt, categoryId: submitted.arcade.categoryId });
+      setRun({ arcade_job_id: job.jobId, stage: "building" });
+      const done = await arcade.pollJob(job.jobId);
+      patternId = done.result?.patternId; productId = done.result?.productId;
+      if (!patternId || !productId) throw new Error("arcade.ai jewelry job succeeded without a patternId and productId");
+    } else {
+      const patJob = await arcade.createPattern({ prompt: submitted.arcade.prompt, modelId: submitted.arcade.modelId });
+      setRun({ arcade_job_id: patJob.jobId });
+      const patDone = await arcade.pollJob(patJob.jobId);
+      patternId = patDone.result?.patternId;
+      if (!patternId) throw new Error("arcade.ai pattern job succeeded without a patternId");
 
-    setRun({ stage: "building" });
-    let prodJob: arcade.Job;
-    try {
-      prodJob = await arcade.createProduct({ patternId, categoryId: submitted.arcade.categoryId, selections: submitted.arcade.selections });
-    } catch (e) {
-      if (e instanceof arcade.ArcadeError && e.status === 400 && /fit|aspect/i.test(String(JSON.stringify(e.body)))) {
-        prodJob = await arcade.createProduct({ patternId, categoryId: submitted.arcade.categoryId, selections: submitted.arcade.selections, fit: { mode: "fill" } });
-      } else throw e;
+      setRun({ stage: "building" });
+      let prodJob: arcade.Job;
+      try {
+        prodJob = await arcade.createProduct({ patternId, categoryId: submitted.arcade.categoryId, selections: submitted.arcade.selections });
+      } catch (e) {
+        if (e instanceof arcade.ArcadeError && e.status === 400 && /fit|aspect/i.test(String(JSON.stringify(e.body)))) {
+          prodJob = await arcade.createProduct({ patternId, categoryId: submitted.arcade.categoryId, selections: submitted.arcade.selections, fit: { mode: "fill" } });
+        } else throw e;
+      }
+      setRun({ arcade_job_id: prodJob.jobId });
+      const prodDone = await arcade.pollJob(prodJob.jobId);
+      productId = prodDone.result?.productId;
+      if (!productId) throw new Error("arcade.ai product job succeeded without a productId");
     }
-    setRun({ arcade_job_id: prodJob.jobId });
-    const prodDone = await arcade.pollJob(prodJob.jobId);
-    const productId = prodDone.result?.productId;
-    if (!productId) throw new Error("arcade.ai product job succeeded without a productId");
 
     // 5. fetch images + price, cache images locally (arcade.ai URLs expire)
     const [pattern, arcadeProduct] = await Promise.all([arcade.getPattern(patternId), arcade.getProduct(productId)]);
