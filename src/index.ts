@@ -85,6 +85,10 @@ app.get("/products/:id", (c) => {
   const v = productView(c.req.param("id"));
   return v ? c.json(v) : notFound(c, "product");
 });
+app.get("/revisions/:id", (c) => {
+  const r = getRevision(c.req.param("id"));
+  return r ? c.json(r) : notFound(c, "revision");
+});
 app.get("/products/:id/revisions", (c) => {
   if (!getProduct(c.req.param("id"))) return notFound(c, "product");
   return c.json(mainHistory(c.req.param("id")).map((r) => ({ ...r, content: JSON.parse(r.content) })));
