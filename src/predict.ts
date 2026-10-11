@@ -40,6 +40,7 @@ const SEEDS: Seed[] = [
   { id: "s16", title: "Cat pattern pillow", keywords: ["cat", "kitten", "dog", "puppy", "pet", "cute", "kawaii"], category: "home-textile", arcadeCategory: "Decorative Pillows", modelId: "estonian-watercolor", selections: { fabric: "canvas", size: "16x16", embellishment: "none", insert: "none" }, materials: ["Cotton"], features: ["Double-sided print", "Hidden zipper"], audience: "Young pet owners", price: [40, 65], palette: ["#F2B705", "#C98F94", "#F4F1EA"], vibe: "playful" },
   { id: "s17", title: "Dainty gemstone ring", keywords: ["ring", "gem", "gemstone", "proposal", "engagement", "jewelry", "jewellery"], category: "jewelry", arcadeCategory: "Dainty Gemstone Ring", modelId: null, selections: {}, materials: ["14K gold", "Gemstone"], features: ["Choice of stone", "Engravable"], audience: "People giving a gift with a story", price: [150, 400], palette: ["#B9A58C", "#F4F1EA", "#55665A"], vibe: "classic" },
   { id: "s18", title: "Pendant necklace", keywords: ["necklace", "pendant", "gift", "birthday", "girlfriend", "anniversary"], category: "jewelry", arcadeCategory: "Pendant Necklace", modelId: null, selections: {}, materials: ["925 silver"], features: ["Engravable", "Adjustable chain"], audience: "People giving a keepsake", price: [90, 220], palette: ["#B9A58C", "#F4F1EA", "#2B2F2C"], vibe: "classic" },
+  { id: "s21", title: "Dainty gemstone earrings", keywords: ["earring", "earrings", "earing", "earings", "studs", "stud", "dangle"], category: "jewelry", arcadeCategory: "Dainty Gemstone Earrings", modelId: null, selections: {}, materials: ["14K gold", "Gemstone"], features: ["Choice of stone", "Butterfly backs"], audience: "People who want a small everyday sparkle", price: [120, 320], palette: ["#B9A58C", "#F4F1EA", "#55665A"], vibe: "classic" },
   { id: "s19", title: "Gilded age frieze shams", keywords: ["sham", "shams", "pillowcase", "gilded", "luxury", "hotel"], category: "bedding", arcadeCategory: "Shams", modelId: "gilded-age", selections: {}, materials: ["Fine cotton"], features: ["Pair", "Envelope closure"], audience: "People who want a hotel-style bedroom", price: [60, 110], palette: ["#B9A58C", "#2B2F2C", "#E9E4D8"], vibe: "classic" },
   { id: "s20", title: "Tapestry-style tall lampshade", keywords: ["floor lamp", "tall", "tapestry", "european", "classic", "antique"], category: "lighting", arcadeCategory: "Tall Drum Lampshades", modelId: "european-tapestry", selections: {}, materials: ["Cotton"], features: ["Warm diffused light"], audience: "People who like classic interiors", price: [90, 160], palette: ["#5B3A29", "#B9A58C", "#55665A"], vibe: "classic" },
 ];
@@ -52,7 +53,7 @@ const VIBES: Record<Seed["vibe"], { mission: string; voice: string; tagline: str
 };
 
 /** arcade.ai category -> singular product noun used in predicted names */
-const SINGULAR: Record<string, string> = { "Decorative Pillows": "Pillow", "Outdoor Decorative Pillows": "Outdoor Pillow", Scarves: "Scarf", "Table Runners": "Table Runner", "Drum Lampshades": "Lampshade", "Tall Drum Lampshades": "Lampshade", Duvets: "Duvet", Napkins: "Napkin Set", "Pocket Squares": "Pocket Square", "Tea Towels": "Tea Towel", Curtains: "Curtains", "Floor Pillows": "Floor Pillow", Placemats: "Placemats", Quilts: "Quilt", "Fabric By The Yard": "Fabric", "Dainty Gemstone Ring": "Ring", "Pendant Necklace": "Necklace", Shams: "Shams" };
+const SINGULAR: Record<string, string> = { "Decorative Pillows": "Pillow", "Outdoor Decorative Pillows": "Outdoor Pillow", Scarves: "Scarf", "Table Runners": "Table Runner", "Drum Lampshades": "Lampshade", "Tall Drum Lampshades": "Lampshade", Duvets: "Duvet", Napkins: "Napkin Set", "Pocket Squares": "Pocket Square", "Tea Towels": "Tea Towel", Curtains: "Curtains", "Floor Pillows": "Floor Pillow", Placemats: "Placemats", Quilts: "Quilt", "Fabric By The Yard": "Fabric", "Dainty Gemstone Ring": "Ring", "Pendant Necklace": "Necklace", Shams: "Shams", "Dainty Gemstone Earrings": "Earrings", "Stud Earrings": "Earrings", "Dangle Earrings": "Earrings", "Initial Earrings": "Earrings" };
 
 export interface Prediction {
   input: string;
@@ -68,7 +69,7 @@ export interface Prediction {
 export function predict(input: string): Prediction {
   const text = input.toLowerCase();
   const scored = SEEDS.map((s) => {
-    const matched = s.keywords.filter((k) => text.includes(k.toLowerCase()));
+    const matched = s.keywords.filter((k) => new RegExp(`(^|[^a-z])${k.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(s|es)?([^a-z]|$)`).test(text));
     // the product noun the user actually wrote (scarf, pillow, necklace...) outranks mood words
     const noun = (SINGULAR[s.arcadeCategory] ?? "").split(" ").pop()!.toLowerCase();
     const nounHit = noun && new RegExp(`\\b${noun}s?\\b`).test(text);

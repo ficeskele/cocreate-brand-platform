@@ -92,7 +92,7 @@ export function RenderStatus({ p }: { p: Product }) {
               <div className="gen idle">
                 <Icon name="image" size={28} />
                 <p className="gen-title">{versions.length ? 'The original has no render; its versions do' : 'No render yet'}</p>
-                <p className="tiny muted">{versions.length ? 'Each version is its own branch with its own render. The original is never replaced.' : 'Mention @agent:concept in the conversation to generate one.'}</p>
+                <p className="tiny muted">{versions.length ? 'Each version is its own branch with its own render. The original is never replaced.' : 'Describe a change in the conversation and confirm the agent\'s draft, or use Generate a version below.'}</p>
               </div>
             )}
             {failed.map(r => <Failure key={r.id} r={r} />)}

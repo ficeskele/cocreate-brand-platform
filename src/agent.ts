@@ -195,7 +195,7 @@ async function resolveCategory(instruction: string, cats: arcade.Category[]) {
   const wanted = /category\s+([A-Za-z][A-Za-z ]+?)\s*(?:,|$)/i.exec(instruction)?.[1]?.trim().toLowerCase();
   const byName = wanted ? cats.find((c) => c.name.toLowerCase() === wanted) ?? cats.find((c) => c.name.toLowerCase().includes(wanted)) : undefined;
   const NOUNS: Array<[RegExp, RegExp]> = [
-    [/necklace|pendant/, /pendant necklace/i], [/\bring\b/, /gemstone ring|^rings$/i], [/stud/, /stud earrings/i], [/dangle/, /dangle earrings/i], [/initial earring/, /initial earrings/i], [/earring/, /gemstone earrings/i],
+    [/necklace|pendant/, /pendant necklace/i], [/stud/, /stud earrings/i], [/dangle/, /dangle earrings/i], [/initial earr?ing/, /initial earrings/i], [/earr?ings?\b/, /gemstone earrings/i], [/\brings?\b/, /gemstone ring|^rings$/i],
     [/scarf/, /^scarves$/i], [/lampshade|lamp/, /^drum lampshades$/i], [/duvet/, /duvets/i], [/napkin/, /napkins/i], [/placemat/, /^placemats$/i], [/runner/, /table runners/i], [/tablecloth/, /tablecloths/i],
     [/curtain/, /curtains/i], [/quilt/, /^quilts$/i], [/tea towel|towel/, /tea towels/i], [/sham|pillowcase/, /^shams$/i], [/floor pillow|floor cushion/, /floor pillows/i], [/outdoor/, /outdoor decorative pillows/i], [/pocket square/, /pocket squares/i], [/fabric|yard/, /fabric by the yard/i],
   ];
@@ -240,7 +240,7 @@ function simpleDesign(input: ProductSpec, instruction: string, categoryId: strin
     arcade: {
       // jewelry: arcade.ai reads the piece and its options (metal) from the prompt; the "style/category" hints are ours, strip them
       prompt: (jewelry
-        ? `${instruction.replace(/,?\s*(style|category)\s+[^,]+/gi, "")}. ${input.concept}${selections.material ? `. Made in ${selections.material}.` : ""}`
+        ? `A ${categoryName.toLowerCase()}: ${instruction.replace(/,?\s*(style|category)\s+[^,]+/gi, "")}. ${input.concept}${selections.material ? `. Made in ${selections.material}.` : ""}`
         : `${instruction}. ${input.concept}. ${input.tagline}`).slice(0, 1000),
       modelId: style,
       categoryId,
