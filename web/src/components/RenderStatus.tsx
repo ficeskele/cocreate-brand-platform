@@ -1,8 +1,8 @@
 // Media area for backend ideas: the render if there is one; live, animated progress of the agent
 // runs generating versions of this idea; failures with their message; and a strip of the versions
 // that already have renders. Branches never replace the original.
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../data/api';
 import { useApp } from '../state/AppState';
 import type { Product } from '../data/mock';
@@ -39,13 +39,18 @@ function Progress({ running }: { running: Run[] }) {
 const Failure = ({ r }: { r: Run }) => <p className="gen-error" role="alert"><Icon name="alert" size={14} /> {who(r.by)}'s run failed: {r.error ?? 'unknown error'}</p>;
 
 export function RenderStatus({ p }: { p: Product }) {
-  const { products, reloadApi, views } = useApp();
+  const { products, reloadApi, apiUser, showToast } = useApp(); const nav = useNavigate();
   const [runs, setRuns] = useState<Run[]>([]);
   const versions = products.filter(x => x.parentId === p.id && x.source === 'api');
+  // refs so the polling closure always sees the latest values without re-creating the interval
+  const versionIdsRef = useRef<string[]>([]); versionIdsRef.current = versions.map(v => v.id);
+  const apiUserRef = useRef(apiUser); apiUserRef.current = apiUser;
+  const myFinishedRef = useRef<{ before: string[] } | null>(null);
+  const seenRunningRef = useRef<Set<string>>(new Set());
 
   // poll this idea's agent runs every 2s; when one finishes, reload so the new version appears
   useEffect(() => {
-    let stop = false; let hadRunning = false;
+    let stop = false;
     const tick = async () => {
       try {
         const msgs = await api.messages(p.apiId!);
@@ -53,15 +58,25 @@ export function RenderStatus({ p }: { p: Product }) {
         const list = await Promise.all(ids.slice(-6).map(async ({ id, by }) => ({ ...(await api.agentRun(id)), by })));
         if (stop) return;
         setRuns(list);
-        const running = list.some(r => r.status === 'running');
-        if (hadRunning && !running) reloadApi();
-        hadRunning = running;
+        const justFinished = list.filter(r => r.status !== 'running' && seenRunningRef.current.has(r.id));
+        for (const r of list) { if (r.status === 'running') seenRunningRef.current.add(r.id); else seenRunningRef.current.delete(r.id); }
+        if (justFinished.length) {
+          if (justFinished.some(r => r.by === apiUserRef.current && r.status === 'succeeded')) myFinishedRef.current = { before: [...versionIdsRef.current] };
+          reloadApi();
+        }
       } catch { /* keep the last state */ }
     };
     tick();
     const t = setInterval(tick, 2000);
     return () => { stop = true; clearInterval(t); };
-  }, [p.apiId, reloadApi, views]);
+  }, [p.apiId, reloadApi]);
+
+  // my run finished and the reload brought a new version: open it
+  useEffect(() => {
+    const pending = myFinishedRef.current; if (!pending) return;
+    const fresh = versions.filter(v => !pending.before.includes(v.id));
+    if (fresh.length) { myFinishedRef.current = null; showToast('Your version is ready'); nav(urlOf(fresh[fresh.length - 1])); }
+  }, [versions, nav, showToast]);
 
   const running = runs.filter(r => r.status === 'running');
   const failed = runs.filter(r => r.status === 'failed').slice(-2);

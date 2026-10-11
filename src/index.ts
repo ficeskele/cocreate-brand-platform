@@ -31,6 +31,7 @@ app.get("/health", (c) => c.json({ ok: true, service: "cocreate-brand-platform",
 app.get("/", serveStatic({ path: "./public/index.html" }));
 // DropLab web (React, built into web/dist) is served at /app/*; the "/" page is unchanged.
 app.get("/app", (c) => c.redirect("/app/"));
+app.use("/app/*", async (c, next) => { await next(); if ((c.res.headers.get("content-type") ?? "").includes("text/html")) c.res.headers.set("Cache-Control", "no-cache"); });
 app.use("/app/*", serveStatic({ root: "./web/dist", rewriteRequestPath: (p) => p.replace(/^\/app/, "") }));
 app.get("/app/*", serveStatic({ path: "./web/dist/index.html" })); // SPA fallback so deep links can be shared
 

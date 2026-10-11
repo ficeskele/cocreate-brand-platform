@@ -45,6 +45,18 @@ export default function Create({ kind }: { kind: 'idea' | 'version' }) {
   };
   const publish = async () => {
     if (!validate()) return;
+    if (kind === 'version' && parent?.source === 'api' && parent.apiId) {
+      if (backend !== 'online') { showToast('Backend offline: cannot generate right now'); return; }
+      setBusy(true);
+      try {
+        const instruction = [d.change.trim(), d.reason.trim() ? `because ${d.reason.trim()}` : '', d.features.trim() ? `features: ${d.features.trim()}` : ''].filter(Boolean).join('. ');
+        await api.generate(parent.apiId, instruction);
+        localStorage.removeItem(key); reloadApi();
+        showToast('Generating your version on arcade.ai (1 to 2 minutes). You will be taken to it when it is ready.');
+        nav(urlOf(parent));
+      } catch (e) { showToast('Could not start: ' + (e as Error).message); } finally { setBusy(false); }
+      return;
+    }
     if (kind === 'idea' && backend === 'online' && pred) {
       setBusy(true);
       try {
@@ -106,7 +118,10 @@ export default function Create({ kind }: { kind: 'idea' | 'version' }) {
           <Field label="Age range"><select value={d.demo} onChange={set('demo')}><option value="">Prefer not to say</option><option>18–24</option><option>25–34</option><option>35–44</option><option>45+</option></select></Field></div>
       </>}
       {step === 3 && <>
-        {kind === 'version' && <div className="compare"><figure><img src={parent!.image} alt="" /><figcaption>Original</figcaption></figure><figure className="on"><img src={parent!.image.replace('bike-bag.svg', 'bottle-bag.svg')} alt="" /><figcaption>Your version</figcaption></figure></div>}
+        {kind === 'version' && (parent!.source === 'api'
+          ? <div className="compare"><figure><img src={parent!.image} alt="" /><figcaption>Original (stays as is)</figcaption></figure><figure className="on"><div className="pending-render" aria-hidden><span className="gen-orb" /><span>Rendered by arcade.ai after you publish</span></div><figcaption>Your version</figcaption></figure></div>
+          : <div className="compare"><figure><img src={parent!.image} alt="" /><figcaption>Original</figcaption></figure><figure className="on"><img src={parent!.image.replace('bike-bag.svg', 'bottle-bag.svg')} alt="" /><figcaption>Your version</figcaption></figure></div>)}
+        {kind === 'version' && parent!.source === 'api' && <p className="assist"><Icon name="sparkle" size={16} />Publishing asks the agent to design this change and arcade.ai to render a real product (1 to 2 minutes). It becomes your own branch; the original never changes.</p>}
         <div className="panel"><h3>{d.title || 'Untitled'}</h3>{d.change && <p><strong>Change:</strong> {d.change}</p>}{d.reason && <p className="muted">Reason: {d.reason}</p>}<p className="small muted">{d.category} · Visibility: {d.visibility} · Own URL · starts with 0 votes</p></div>
         <div className="panel"><h3>Images and authorship</h3><p className="small">1 own image{parent ? ` · 1 inherited (author: ${parent.author === 'me' ? 'you' : parent.author})` : ''}</p>
           <label className={`check${err.rights ? ' has-error' : ''}`}><input type="checkbox" checked={d.rights} onChange={e => setD({ ...d, rights: e.target.checked })} />I am the author of the new images or have permission to publish them. Inherited images keep their author.</label>{err.rights && <em className="err" role="alert">{err.rights}</em>}

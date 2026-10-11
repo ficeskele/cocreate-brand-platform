@@ -336,3 +336,4 @@ input::placeholder,textarea::placeholder{color:hsl(0 0% 50%)}
 .generate-box{margin-top:8px}
 .generate-box h3{display:flex;align-items:center;gap:6px}
 .generate-box .composer input{flex:1}
+.pending-render{aspect-ratio:1/1;display:grid;place-items:center;align-content:center;gap:10px;border:1px dashed var(--color-border);border-radius:var(--radius-lg);background:var(--color-muted);color:var(--color-secondary);font-size:12px;text-align:center;padding:16px}
