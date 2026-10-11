@@ -1,0 +1,31 @@
+/* Tailwind v4 sin preflight: no reinicia los estilos existentes (app.css). */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Tema shadcn → tokens monocromo DropLab (tokens.css) */
+:root {
+  --background: var(--color-bg);
+  --foreground: var(--color-text);
+  --muted: var(--color-muted);
+  --muted-foreground: var(--color-secondary);
+  --border: var(--color-border);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-text);
+  --primary: var(--color-cta);
+  --primary-foreground: var(--color-on-cta);
+  --radius: var(--radius-md);
+}
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --font-sans: var(--font);
+  --radius-sm: 8px; --radius-md: 10px; --radius-lg: 12px;
+}

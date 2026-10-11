@@ -19,3 +19,6 @@ Demo (`src/data/mock.ts`, tagged **Demo**): sample ideas and renders, votes, fol
 
 ## Checks
 `pnpm --dir web exec tsc -b` · `pnpm web:build` · with the server running: `node web/scripts/smoke.mjs` and `node web/scripts/shots.mjs` (390/834/1440 overflow check, writes web/shots/).
+
+## Why `src/components/ui` matters (shadcn)
+shadcn/ui copies component source into your repo instead of installing a package. `components.json` tells its CLI that UI primitives live in `@/components/ui` and helpers in `@/lib/utils` (`cn` = clsx + tailwind-merge). Keeping that exact path and the `@/` alias (tsconfig + Vite) means `npx shadcn add <component>` and pasted shadcn-style components (e.g. `works-wheel.tsx`) resolve their imports without edits. Tailwind v4 is loaded without preflight (`src/styles/tailwind.css`), so the existing plain-CSS screens are unaffected; theme vars (`--background`, `--foreground`, `--muted`, `--muted-foreground`, …) map to the DropLab monochrome tokens.
