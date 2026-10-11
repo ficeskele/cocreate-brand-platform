@@ -118,6 +118,7 @@
   </div>
 </header>
 
+<div id="modeBanner" style="display:none;background:#fff3d6;border-bottom:1px solid #e6c98a;padding:8px 24px;font-size:13px;color:#6b4e12"></div>
 <div class="steps" id="steps">
   <div class="step" data-step="1"><b>1</b> Create a brand</div>
   <div class="step" data-step="2"><b>2</b> Create a product</div>
@@ -291,7 +292,10 @@ function renderMain() {
       <div class="chips">${(state.coauthors ?? []).map((c) => `<span class="chip ${c.type}">${esc(c.handle)} ×${c.revisions}${c.on_behalf_of ? ` <span class="muted">on behalf of ${esc(c.on_behalf_of.replace(/^u_/, ""))}</span>` : ""}</span>`).join("")}</div>
     </div>
 
-    <div class="card">${spec ? specCard(spec, brand) : `<div class="muted">main is empty</div>`}</div>
+    <div class="card">${spec ? specCard(spec, brand) : `<div class="muted">main is empty</div>`}
+      ${p.open_proposals.length ? `<div style="margin-top:12px;padding:10px 12px;background:#eef3ef;border:1px solid var(--sage);border-radius:9px;font-size:13px;color:var(--sage-deep)">This card shows what is on <b>main</b> right now. The agent's new version (with images) is in <b>Proposals</b> on the right. It replaces this card once you click Merge.</div>` : ""}
+      ${run?.status === "running" ? `<div style="margin-top:12px;padding:10px 12px;background:#faf8f2;border:1px solid var(--line);border-radius:9px;font-size:13px" class="muted">The agent is working. Its new version will appear in Proposals on the right when done.</div>` : ""}
+    </div>
 
     <div class="grid2">
       <div class="card">
@@ -370,6 +374,10 @@ async function sendMessage() {
 }
 
 setStep(1);
+fetch("/health").then((r) => r.json()).then((h) => {
+  const b = $("#modeBanner");
+  if (h.mock_design) { b.style.display = ""; b.innerHTML = "<b>Simple mode</b>: no Claude key is set, so the agent does not design with Claude. It sends your instruction and the product concept straight to arcade.ai as the prompt; text fields are not rewritten. To get real designs, add ANTHROPIC_API_KEY to .env and start with scripts/serve.sh."; }
+}).catch(() => {});
 loadBrands().then(() => {
   const wanted = new URLSearchParams(location.hash.slice(1)).get("product");
   const hit = wanted && state.brands.find((b) => b.products.some((p) => p.id === wanted));

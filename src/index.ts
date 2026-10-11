@@ -22,7 +22,7 @@ app.onError((err, c) => {
 const notFound = (c: Context, what: string) => c.json({ error: { code: "NOT_FOUND", message: `${what} not found` } }, 404);
 
 app.use("/images/*", serveStatic({ root: "./data" }));
-app.get("/health", (c) => c.json({ ok: true, service: "cocreate-brand-platform", arcade: "arcade.ai" }));
+app.get("/health", (c) => c.json({ ok: true, service: "cocreate-brand-platform", arcade: "arcade.ai", mock_design: process.env.AGENT_MOCK_DESIGN === "1", claude: Boolean(process.env.ANTHROPIC_API_KEY) }));
 app.get("/", serveStatic({ path: "./public/index.html" }));
 
 // ---- brands ----
@@ -74,7 +74,7 @@ function productView(productId: string) {
     main_head: head,
     branches: all("SELECT * FROM branch WHERE product_id = ? ORDER BY created_at", productId),
     open_proposals: all("SELECT * FROM proposal WHERE product_id = ? AND status = 'open' ORDER BY created_at", productId),
-    messages: all("SELECT * FROM message WHERE product_id = ? ORDER BY created_at DESC LIMIT 20", productId).reverse(),
+    messages: all("SELECT * FROM message WHERE product_id = ? ORDER BY created_at DESC, rowid DESC LIMIT 20", productId).reverse(),
   };
 }
 app.get("/products/:id", (c) => {
@@ -94,7 +94,7 @@ app.get("/products/:id/coauthors", (c) => {
 const MENTION = /@agent:concept\s*(.*)/s;
 app.get("/products/:id/messages", (c) => {
   if (!getProduct(c.req.param("id"))) return notFound(c, "product");
-  return c.json(all("SELECT * FROM message WHERE product_id = ? ORDER BY created_at", c.req.param("id")));
+  return c.json(all("SELECT * FROM message WHERE product_id = ? ORDER BY created_at, rowid", c.req.param("id")));
 });
 app.post("/products/:id/messages", async (c) => {
   const product = getProduct(c.req.param("id"));

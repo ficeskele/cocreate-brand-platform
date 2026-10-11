@@ -181,26 +181,37 @@ async function designWithClaude(ctx: DesignCtx): Promise<SubmitSpec> {
     return submitted;
 }
 
-/** Demo fallback when no Claude credentials are available: a fixed, known-good design. */
-function mockDesign(input: ProductSpec, instruction: string): SubmitSpec {
+/**
+ * Simple mode (AGENT_MOCK_DESIGN=1, no Claude credentials): no LLM. The user's instruction plus the
+ * product's concept and tagline become the arcade.ai prompt verbatim. Text fields are left untouched.
+ * Size like "20x20" and a fabric keyword in the instruction are honoured; otherwise category defaults apply.
+ */
+function simpleDesign(input: ProductSpec, instruction: string): SubmitSpec {
+  const text = `${instruction} ${input.concept} ${input.tagline}`;
+  const size = /(\d{1,2})\s*[x×]\s*(\d{1,2})/i.exec(instruction);
+  const fabricWords: Array<[RegExp, string]> = [
+    [/velvet|絨/i, "cotton_velvet"], [/soft linen|軟亞麻/i, "soft_linen"], [/linen|亞麻/i, "linen"], [/fine cotton|細棉/i, "fine_cotton"],
+  ];
+  const fabric = fabricWords.find(([re]) => re.test(instruction))?.[1];
+  const selections: Record<string, string> = { fabric: fabric ?? "canvas", size: size ? `${size[1]}x${size[2]}` : "18x18", embellishment: "none", insert: "none" };
   return {
-    summary: `Updated per the instruction "${instruction}": added spring plum blossoms, switched to an East Asian style for the pattern, and made it a 20x20 linen pillow.`,
+    summary: `Simple mode (no Claude): generated an arcade.ai pattern from your words "${instruction}" and the product concept, then built a Decorative Pillow (${selections.fabric}, ${selections.size}). Text fields were not rewritten.`,
     spec: {
-      name: `${input.name} · Spring Edition`,
-      tagline: "Plum blossoms open while the mist still lingers",
-      concept: `${input.concept} The spring edition features plum blossoms and terraced tea gardens in the morning mist.`,
+      name: input.name,
+      tagline: input.tagline,
+      concept: input.concept,
       category: input.category,
       target_audience: input.target_audience,
-      features: [...input.features, { id: `f${input.features.length + 1}`, text: "Spring-edition pattern, limited run" }],
-      materials: [{ id: "m1", name: "Linen" }],
-      colorways: [...input.colorways, { id: `c${input.colorways.length + 1}`, name: "Plum Pink", hex: "#E8C4C4" }],
-      sourcing_notes: "Made to order by an arcade.ai partner artisan, from a single unit.",
+      features: input.features,
+      materials: input.materials,
+      colorways: input.colorways,
+      sourcing_notes: input.sourcing_notes || "Made to order by an arcade.ai partner artisan, from a single unit.",
     },
     arcade: {
-      prompt: "A serene mountain tea garden at dawn with soft mist, terraced tea plants, blooming plum blossoms and small songbirds, elegant East Asian ink and watercolor style, muted sage green and cream palette",
-      modelId: "chinoiserie",
+      prompt: `${instruction}. ${input.concept}. ${input.tagline}`.slice(0, 1000),
+      modelId: "",
       categoryId: "0ef267de-f8c2-4a93-89a3-63be809f68e2",
-      selections: { fabric: "linen", size: "20x20", embellishment: "none", insert: "none" },
+      selections,
     },
   };
 }
@@ -228,7 +239,7 @@ export async function runConceptAgent(runId: string) {
     const inputRev = getRevision(agentRun.input_revision_id)!;
     const inputSpec = ProductSpec.parse(inputRev.content);
     const recent = all<{ author_type: string; author_id: string; body: string }>(
-      "SELECT author_type, author_id, body FROM message WHERE product_id = ? ORDER BY created_at DESC LIMIT 10",
+      "SELECT author_type, author_id, body FROM message WHERE product_id = ? ORDER BY created_at DESC, rowid DESC LIMIT 10",
       product.id,
     ).reverse();
 
@@ -236,8 +247,8 @@ export async function runConceptAgent(runId: string) {
     setRun({ stage: "designing" });
     let submitted: SubmitSpec | null = null;
     if (process.env.AGENT_MOCK_DESIGN === "1") {
-      submitted = mockDesign(inputSpec, agentRun.instruction);
-      toolCalls.push({ tool: "mock_design", input: { instruction: agentRun.instruction }, output: submitted });
+      submitted = simpleDesign(inputSpec, agentRun.instruction);
+      toolCalls.push({ tool: "simple_design", input: { instruction: agentRun.instruction }, output: submitted });
       setRun({ tool_calls: JSON.stringify(toolCalls) });
     } else {
       submitted = await designWithClaude({ brand, inputSpec, recent, instruction: agentRun.instruction, toolCalls, onToolCall: () => setRun({ tool_calls: JSON.stringify(toolCalls) }) });
@@ -247,7 +258,7 @@ export async function runConceptAgent(runId: string) {
     const cats = await arcade.listCategories();
     const styles = await arcade.listModels();
     const catName = cats.find((c) => c.categoryId === submitted.arcade.categoryId)?.name ?? submitted.arcade.categoryId;
-    const styleName = styles.find((m) => m.modelId === submitted.arcade.modelId)?.name ?? submitted.arcade.modelId;
+    const styleName = submitted.arcade.modelId ? (styles.find((m) => m.modelId === submitted.arcade.modelId)?.name ?? submitted.arcade.modelId) : "arcade.ai auto";
     const selLabel = Object.entries(submitted.arcade.selections).map(([k, v]) => `${k}=${v}`).join(", ");
     say(`Design done. I will generate the pattern on arcade.ai in the "${styleName}" style and make it a ${catName} (${selLabel}). Generation takes about 1 to 2 minutes.`);
 
