@@ -1,9 +1,9 @@
-/* Tailwind v4 sin preflight: no reinicia los estilos existentes (app.css). */
+/* Tailwind v4 without preflight: does not reset the existing plain-CSS styles (app.css). */
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
-/* Tema shadcn → tokens monocromo DropLab (tokens.css) */
+/* shadcn theme vars → DropLab tokens (tokens.css) */
 :root {
   --background: var(--color-bg);
   --foreground: var(--color-text);
@@ -15,6 +15,8 @@
   --primary: var(--color-cta);
   --primary-foreground: var(--color-on-cta);
   --radius: var(--radius-md);
+  --accent: var(--color-accent);
+  --accent-foreground: #fff;
 }
 @theme inline {
   --color-background: var(--background);
@@ -27,5 +29,8 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --font-sans: var(--font);
+  --font-serif: var(--font-serif);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --radius-sm: 8px; --radius-md: 10px; --radius-lg: 12px;
 }

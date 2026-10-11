@@ -1,4 +1,4 @@
-// Smoke test: /app carga, se ven productos del backend y la conversación real.
+// Smoke test: /app loads, backend products and the real conversation show up.
 import { chromium } from 'playwright';
 const B = process.env.BASE_URL ?? 'http://localhost:3456/app';
 const b = await chromium.launch(); const p = await b.newPage({ viewport: { width: 1440, height: 1000 } });

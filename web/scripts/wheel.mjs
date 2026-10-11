@@ -7,7 +7,7 @@ for (const w of [390, 834, 1440]) {
   await p.addInitScript(() => sessionStorage.setItem('droplab-intro-seen', '1')); const errs = []; p.on('pageerror', e => errs.push(e.message));
   await p.goto(B + '/'); await p.waitForSelector('[role=listbox]'); await p.waitForTimeout(600);
   await p.screenshot({ path: `docs/screenshots/landing-ring-${w}.png` });
-  const stage = p.locator('[role=listbox]'); const box = await stage.boundingBox();
+  const stage = p.locator('[role=listbox]'); await stage.scrollIntoViewIfNeeded(); await p.waitForTimeout(700); const box = await stage.boundingBox();
   const sel = () => p.evaluate(() => document.querySelector('[role=listbox]')?.getAttribute('aria-activedescendant'));
   const ow = await p.evaluate(() => document.documentElement.scrollWidth - innerWidth);
   await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2);

@@ -1,3 +1,4 @@
+import { LiquidMetalButton } from '@/components/ui/liquid-metal-button';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useApp } from '../state/AppState';
@@ -30,7 +31,7 @@ export default function Detail() {
           <p className="muted">by {personName(p.author)} {p.source === 'api' ? <LiveTag /> : <Demo />}</p>
           <div className="utility-row"><VoteControl p={p} /><FollowButton p={p} /><ShareButton p={p} /></div>
           <p className="tiny muted">Votes belong to this version and don’t add up with others. Voting signals interest, not a purchase.</p>
-          <Button block onClick={() => requireAuth('create your version of this idea', () => nav(`/crear-version/${p.slug}`))}><Icon name="branch" size={18} />Create version</Button>
+          <div className="cta-metal"><span className="lm-wrap"><LiquidMetalButton label="Create version" onClick={() => requireAuth('create your version of this idea', () => nav(`/crear-version/${p.slug}`))} /></span><span className="small muted">Branch it: your version gets its own votes.</span></div>
           <section className="facts">
             {p.reason && <div><h2>What changes</h2><p>{p.change} <span className="muted">Reason: {p.reason}</span></p></div>}
             <div><h2>Need</h2><p>{p.need}</p></div>

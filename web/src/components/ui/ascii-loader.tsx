@@ -32,7 +32,7 @@ const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(v => (v
 
 export function AsciiLoader({
   src, cellSize = 9, contrast = 158, density = 20, coverage = 100, bgMode = "none",
-  animated = true, animSpeed = 100, animIntensity = 60, ink = "#171717", paper = "#F7F7F4",
+  animated = true, animSpeed = 100, animIntensity = 60, ink = "#FFFFFF", paper = "#000000",
   duration = 1900, minAspect = 1.1, title, subtitle, onDone, className,
 }: AsciiLoaderProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
