@@ -80,3 +80,100 @@ It performs steps 2 to 6 above, prints each result, and ends with the checkout U
 | The agent replies "Sorry, this design run failed: …" | Paste that error message to me |
 | The left column fills with duplicate brands | `rm -f data/app.db*` and restart, or ignore it |
 | You want real Claude designs | Add `ANTHROPIC_API_KEY=...` to `.env` and start with `scripts/serve.sh` (without --mock) |
+
+---
+
+# Test workflow for the DropLab web app (`/app`)
+
+The React frontend from PR #1 lives at http://localhost:3456/app/ . The old page at `/` still works but is a separate UI; do not mix the two while testing.
+
+## 0. Start clean
+
+```bash
+cd ~/Developer/arcade_hackthon
+rm -f data/app.db*                 # wipe old test data (old versions with unrelated images come from here)
+scripts/serve.sh --mock            # builds web/ if needed, then starts on :3456
+```
+
+Wait for `cocreate-brand-platform on http://localhost:3456`. Keep the terminal open.
+
+## 1. Seed one product (the web app has no "create backend product" form yet)
+
+In a second terminal:
+
+```bash
+curl -s -X POST localhost:3456/brands -H 'content-type: application/json' -H 'x-user-id: u_alice' \
+  -d '{"name":"Mist","slug":"mist-'"$(date +%s)"'","identity":{"mission":"Calm East Asian landscapes for everyday life","voice":"Understated, poetic","palette":["#7A8B7F","#E9E4D8","#B9A58C"]}}' | tee /tmp/brand.json
+BID=$(jq -r .id /tmp/brand.json)
+curl -s -X POST localhost:3456/brands/$BID/products -H 'content-type: application/json' -H 'x-user-id: u_alice' \
+  -d '{"name":"Clown Pillow","spec":{"name":"Clown Pillow","tagline":"Make my room go wild","concept":"A pillow covered in bright circus clowns.","category":"home-textile","target_audience":"Young people","features":[{"id":"f1","text":"Double-sided print"},{"id":"f2","text":"Hidden zipper"}],"materials":[{"id":"m1","name":"Cotton"}],"colorways":[{"id":"c1","name":"Sage","hex":"#7A8B7F"}],"price_target":{"currency":"USD","min":null,"max":null},"images":[],"sourcing_notes":""}}' | jq '{id, name}'
+```
+
+## 2. Open the app
+
+http://localhost:3456/app/
+
+Expected: "Explorar" feed. Four **Demo** cards (bike bag, lamp, planter...) plus one card tagged **Backend**: "Clown Pillow" with a grey "Sin render todavía" placeholder. The grey line under the title says "Conectado al backend".
+
+## 3. Open the idea and ask the agent
+
+Click the **Clown Pillow** card. You land on the detail page, tab **Conversación** (empty, tagged Backend).
+
+In the text box type:
+
+```
+@agent:concept bright clown pattern, 20x20 linen
+```
+
+Click **Publicar**.
+
+Expected:
+- Your message appears, then an agent reply "Design done…".
+- A line "Agente: running · designing" appears, then "running · generating", "running · building", and after 1 to 2 minutes "succeeded · done".
+- The big image on the page still shows the placeholder. That is correct: main has not changed yet.
+
+## 4. Review and merge the version
+
+Click tab **Versiones**.
+
+Expected:
+- The version tree shows "Original · Clown Pillow" and one child "Clown Pillow · bright clown pattern…" by agent:concept. (The "Demo" badge next to the vote count is a leftover label from the PR; votes are demo-only.)
+- Panel **Propuestas abiertas** (Backend) shows the agent's summary. Click **Ver cambios** to list the changed fields.
+
+Switch user: top nav **Perfil** → "Usuario del backend" → pick **bob**. Go back (browser back or the Explorar → card → Versiones).
+
+Click **Integrar propuesta**.
+
+Expected:
+- Toast "Propuesta integrada".
+- The big image at the top becomes the clown pillow render from arcade.ai.
+- Panel **Coautores** shows alice, bob, and "Agente concept (por alice)".
+- Feed card for the idea now shows the render too.
+
+## 5. Release and store
+
+Click tab **Tiendas** → **Crear release** → "Release v1 creado." → **Abrir tienda**.
+
+Expected: button becomes **Abrir checkout**, a link to checkout.arcade.ai. Do not pay: it is a real order.
+
+## 6. (Optional) one more round
+
+Back in **Conversación**, send `@agent:concept same clowns but in blue tones, 18x18 velvet`. A second version appears under Versiones with its own image; merge it the same way.
+
+## Automated version of steps 3 to 5
+
+```bash
+cd web && node scripts/e2e.mjs            # full run including the 1-2 min generation
+cd web && SKIP_AGENT=1 node scripts/e2e.mjs   # only diff → merge → release → store, needs an open proposal
+```
+
+Prints a JSON summary and writes screenshots to `web/docs/screenshots/e2e-*.png`.
+
+## What is Demo vs Backend in `/app`
+
+| Backend (real, from our API) | Demo (fake data from the PR) |
+|---|---|
+| Ideas tagged **Backend**, their image, title, description | Bike bag, lamp, planter ideas |
+| Conversación messages and `@agent:concept` runs | Votes, Seguir, Compartir counts |
+| Versiones: tree children, Propuestas abiertas, Coautores | Interés tab, royalties, Ganancias |
+| Tiendas: Crear release, Abrir tienda (arcade.ai checkout) | Merchant mode (`/app/m`), Shopify preview |

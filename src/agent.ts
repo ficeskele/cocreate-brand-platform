@@ -197,7 +197,8 @@ function simpleDesign(input: ProductSpec, instruction: string, categoryId: strin
   return {
     summary: `Simple mode (no Claude): generated an arcade.ai pattern from your words "${instruction}" and the product concept, then built a Decorative Pillow (${selections.fabric}, ${selections.size}). Text fields were not rewritten.`,
     spec: {
-      name: input.name,
+      // Versions need a distinguishable name in lists; the rest of the text stays untouched.
+      name: `${input.name} · ${instruction.replace(/\s+/g, " ").slice(0, 24)}`,
       tagline: input.tagline,
       concept: input.concept,
       category: input.category,
