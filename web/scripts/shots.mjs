@@ -3,7 +3,7 @@ const B = process.env.BASE_URL ?? 'http://localhost:3456/app';
 const widths = { mobile: 390, tablet: 834, desktop: 1440 };
 const only = process.argv[2];
 const pages = [
-  ['feed', '/'], ['detalle', '/i/bolso-bici'], ['detalle-version', '/i/bolso-bici/v/bolso-bici-botella'],
+  ['landing', '/'], ['feed', '/explorar'], ['detalle', '/i/bolso-bici'], ['detalle-version', '/i/bolso-bici/v/bolso-bici-botella'],
   ['registro', '/i/bolso-bici', async p => { await p.getByRole('button', { name: 'Crear versión' }).click(); await p.waitForSelector('.modal'); }],
   ['buscar', '/buscar', async p => { await p.fill('input', 'bolso bici'); }],
   ['buscar-vacio', '/buscar', async p => { await p.fill('input', 'paraguas plegable'); }],

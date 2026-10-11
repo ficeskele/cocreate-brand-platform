@@ -34,7 +34,7 @@ export function Aportes() {
       <header className="page-head"><h1>Aportes</h1></header>
       <Tabs<AT> value={t} onChange={setT} items={[{ id: 'ideas', label: 'Mis ideas' }, { id: 'versiones', label: 'Versiones' }, { id: 'seguidos', label: 'Seguidos' }, { id: 'borradores', label: 'Borradores' }]} />
       {t === 'borradores' ? (drafts.length ? <ul className="list">{drafts.map(k => <li key={k} className="list-item"><Icon name="layers" /><span>{k.includes('version') ? 'Versión de ' + k.split('-').slice(3).join('-') : 'Idea nueva'}</span><Link to={k.includes('version') ? `/crear-version/${k.split('-').slice(3).join('-')}` : '/crear'}>Continuar</Link></li>)}</ul> : <Empty title="Sin borradores" text="Se guardan solos mientras escribes." />)
-        : list.length ? <div className="grid">{list.map(p => <IdeaCard key={p.id} p={p} />)}</div>
+        : list.length ? <div className="dl-grid">{list.map(p => <IdeaCard key={p.id} p={p} />)}</div>
         : <Empty title={t === 'seguidos' ? 'Aún no sigues ninguna idea' : 'Todavía no has publicado'} text={t === 'seguidos' ? 'Seguir es distinto de votar: te avisa de novedades.' : 'Busca una idea y crea tu versión.'} action={<Link className="btn btn-secondary" to="/buscar">Buscar ideas</Link>} />}
     </div>
   );
@@ -63,7 +63,7 @@ export function Ganancias() {
 }
 export function Perfil() {
   const { user, mode, setMode, signOut, requireAuth, apiUser, setApiUser, backend } = useApp(); const nav = useNavigate();
-  const go = (m: 'consumer' | 'merchant') => requireAuth('cambiar de modo', () => { setMode(m); nav(m === 'merchant' ? '/m' : '/'); });
+  const go = (m: 'consumer' | 'merchant') => requireAuth('cambiar de modo', () => { setMode(m); nav(m === 'merchant' ? '/m' : '/explorar'); });
   return (
     <div className="page narrow">
       <header className="page-head"><h1>Perfil</h1></header>

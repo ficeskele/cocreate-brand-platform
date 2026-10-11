@@ -15,12 +15,12 @@ export default function Detail() {
   const p = products.find(x => x.slug === (vslug ?? slug));
   const [tab, setTab] = useState<T>((sp.get('tab') as T) || 'conversacion');
   useEffect(() => { setTab((sp.get('tab') as T) || 'conversacion'); }, [sp, p?.id]);
-  if (!p) return <div className="page"><Empty icon="alert" title="Esta idea no existe o fue retirada" action={<Link className="btn btn-secondary" to="/">Volver a Explorar</Link>} /></div>;
+  if (!p) return <div className="page"><Empty icon="alert" title="Esta idea no existe o fue retirada" action={<Link className="btn btn-secondary" to="/explorar">Volver a Explorar</Link>} /></div>;
   const root = rootOf(p); const a = agg[p.id]; const launched = drafts.find(d => d.productId === p.id && d.launched) || (p.status === 'Lanzado');
   const change = (t: T) => { setTab(t); setSp(t === 'conversacion' ? {} : { tab: t }, { replace: true }); };
   return (
     <div className="page detail">
-      <Link to="/" className="back"><Icon name="back" size={18} />Explorar</Link>
+      <Link to="/explorar" className="back"><Icon name="back" size={18} />Explorar</Link>
       <div className="detail-grid">
         <div className="detail-media"><ProductImage p={p} ratio="1/1" /></div>
         <div className="detail-content">

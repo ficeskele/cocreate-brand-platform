@@ -12,6 +12,8 @@ PORT=3456 AGENT_MOCK_DESIGN=1 pnpm start  # or scripts/serve.sh --mock
 ```
 Without the backend running, the app still works with Demo data only.
 
+Routes: `/app/` is the landing (WorksWheel of the most-voted ideas, Demo votes), `/app/explorar` is the feed, ideas/versions keep their shareable URLs (`/app/i/:slug`, `/app/i/:slug/v/:version`). Wheel check: `node web/scripts/wheel.mjs`.
+
 ## Real vs Demo
 Real (`src/data/api.ts`, tagged **Backend** in the UI): brands/products → ideas, non-main branches → versions, `GET/POST /products/:id/messages` (+ `@agent:concept` with `/agent-runs/:id` polling), `/products/:id/coauthors`, open proposals + `/proposals/:id` diff + `/merge`, `/products/:id/releases` + `/releases/:id/open-store`, `X-User-Id` (alice/bob switch in Perfil).
 

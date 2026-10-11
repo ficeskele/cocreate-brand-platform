@@ -56,7 +56,7 @@ export function SeleccionarVersion() {
   return <Guard><div className="page">
     <Link to={`/m/i/${root.slug}`} className="back"><Icon name="back" size={18} />Detalle comercial</Link>
     <header className="page-head"><h1>Elige la versión</h1><p className="lede">Cada versión tiene sus propios votos; no se suman entre sí.</p></header>
-    <div className="grid" role="radiogroup">{vs.map(v => <button key={v.id} role="radio" aria-checked={sel === v.id} className={`card pick${sel === v.id ? ' on' : ''}`} onClick={() => setSel(v.id)}>
+    <div className="dl-grid" role="radiogroup">{vs.map(v => <button key={v.id} role="radio" aria-checked={sel === v.id} className={`card pick${sel === v.id ? ' on' : ''}`} onClick={() => setSel(v.id)}>
       <ProductImage p={v} /><div className="card-body"><p className="tiny muted">{v.parentId ? 'Versión' : 'Original'}</p><h3 className="card-title">{v.title}</h3><p className="small muted">{personName(v.author)} · {net(v)} votos netos <Demo /></p>{sel === v.id && <p className="small strong"><Icon name="check" size={14} /> Seleccionada</p>}</div></button>)}</div>
     <Button onClick={() => nav(`/m/v/${products.find(x => x.id === sel)!.slug}/derechos`)}>Continuar: derechos de uso</Button>
   </div></Guard>;
