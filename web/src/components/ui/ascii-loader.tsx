@@ -63,6 +63,7 @@ export function AsciiLoader({
     const sample = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const W = canvas.clientWidth, H = canvas.clientHeight;
+      if (!W || !H) return; // not laid out yet (e.g. hidden or fading out)
       canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const cw = W * coverage / 100, ch = H * coverage / 100;
       // contain the image inside the covered area

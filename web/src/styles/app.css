@@ -307,3 +307,17 @@ input::placeholder,textarea::placeholder{color:hsl(0 0% 50%)}
 .cta-metal{display:flex;align-items:center;gap:var(--space-4);flex-wrap:wrap}
 .lm-wrap span[style*="color: rgb(102, 102, 102)"],.lm-wrap span{color:#e5e5e5 !important}
 .lm-wrap svg{color:#e5e5e5 !important}
+
+/* Vote / follow / nav polish: 44px targets, clear selected state */
+.vote{height:44px;border-radius:var(--radius-pill);border-color:var(--color-border);background:rgba(255,255,255,.02)}
+.vote button{width:44px;height:42px;border-radius:var(--radius-pill);color:var(--color-secondary);transition:background .15s,color .15s}
+.vote button:hover{color:var(--color-text);background:rgba(255,255,255,.06)}
+.vote button[aria-pressed=true]{color:#000;background:#fff}
+.vote button[aria-pressed=true]:last-child{color:var(--color-text);background:hsl(0 0% 22%)}
+.vote-n{min-width:32px}
+.util{height:44px;border-radius:var(--radius-pill);padding:0 var(--space-4)}
+.util:hover{background:rgba(255,255,255,.06)}
+.util.on,.util[aria-pressed=true]{background:#fff;color:#000;font-weight:600}
+.pin{width:32px;height:32px}
+.lsn-link{text-decoration:none;display:inline-flex;align-items:center;min-height:44px;border-radius:6px}
+.topnav.flex{display:none} @media (min-width:1024px){.topnav.flex{display:flex}}

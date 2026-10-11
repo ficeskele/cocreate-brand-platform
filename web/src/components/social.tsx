@@ -6,18 +6,18 @@ import { useApp, voteCount } from '../state/AppState';
 import { byId, urlOf, type Product } from '../data/mock';
 
 export function VoteControl({ p }: { p: Product }) {
-  const { votes, vote, requireAuth } = useApp(); const v = votes[p.id] ?? null;
+  const { votes, vote, requireAuth, showToast } = useApp(); const v = votes[p.id] ?? null;
   return (
     <div className="vote" aria-label="Vote on this version">
-      <button aria-pressed={v === 'up'} className={v === 'up' ? 'on' : ''} onClick={() => requireAuth('vote on this version', () => vote(p.id, 'up'))} aria-label="Upvote"><Icon name="up" size={18} /></button>
-      <span className="vote-n">{voteCount(p, v)}</span>
-      <button aria-pressed={v === 'down'} className={v === 'down' ? 'on' : ''} onClick={() => requireAuth('vote on this version', () => vote(p.id, 'down'))} aria-label="Downvote"><Icon name="down" size={18} /></button>
+      <button aria-pressed={v === 'up'} className={v === 'up' ? 'on' : ''} onClick={() => requireAuth('vote on this version', () => { vote(p.id, 'up'); showToast(v === 'up' ? 'Vote removed' : 'Upvoted · tap again to undo'); })} aria-label="Upvote"><Icon name="up" size={20} fill={v === 'up'} /></button>
+      <span className="vote-n" aria-live="polite" aria-label={`${voteCount(p, v)} net votes${v ? `, you voted ${v}` : ''}`}>{voteCount(p, v)}</span>
+      <button aria-pressed={v === 'down'} className={v === 'down' ? 'on' : ''} onClick={() => requireAuth('vote on this version', () => { vote(p.id, 'down'); showToast(v === 'down' ? 'Vote removed' : 'Downvoted · tap again to undo'); })} aria-label="Downvote"><Icon name="down" size={20} fill={v === 'down'} /></button>
     </div>
   );
 }
 export function FollowButton({ p }: { p: Product }) {
   const { follows, toggleFollow, requireAuth } = useApp(); const on = !!follows[p.id];
-  return <button className={`util${on ? ' on' : ''}`} aria-pressed={on} onClick={() => requireAuth('follow this idea', () => toggleFollow(p.id))}><Icon name="bookmark" size={18} />{on ? 'Following' : 'Follow'}</button>;
+  return <button className={`util${on ? ' on' : ''}`} aria-pressed={on} onClick={() => requireAuth('follow this idea', () => toggleFollow(p.id))}><Icon name={on ? 'bookmark-check' : 'bookmark'} size={18} />{on ? 'Following' : 'Follow'}</button>;
 }
 export function ShareButton({ p }: { p: Product }) {
   const { showToast } = useApp();

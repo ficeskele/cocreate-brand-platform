@@ -1,3 +1,4 @@
+import { LetterSwapNav } from '@/components/ui/m-random-letter-swap-1';
 import { NavLink, Link, Outlet, useLocation } from 'react-router-dom';
 import { Icon } from './Icon';
 import { AuthModal } from './AuthModal';
@@ -21,7 +22,7 @@ export function Layout() {
       <header className="topbar">
         <div className="topbar-in">
           <Link to={nav === merchantNav ? '/m' : '/'} className="brand">DropLab{nav === merchantNav && <span className="brand-mode">Merchant</span>}</Link>
-          <nav className="topnav" aria-label="Main">{nav.map(n => <NavLink key={n.to} to={n.to} end={n.end}>{n.label}</NavLink>)}</nav>
+          <LetterSwapNav className="topnav" links={nav} />
           <div className="topbar-actions">
             {nav === consumerNav && <Link to="/search" className="icon-btn desk-only" aria-label="Search"><Icon name="search" /></Link>}
             <Link to="/notifications" className="icon-btn bell" aria-label={`Notifications (${unread} unread)`}><Icon name="bell" />{unread > 0 && <span className="dot" />}</Link>
