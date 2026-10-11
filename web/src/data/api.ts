@@ -48,7 +48,7 @@ export const api = {
 
 const FALLBACK_RENDER = `${import.meta.env.BASE_URL}renders/placeholder.svg`;
 const pick = (spec: ApiSpec | undefined) => spec?.images.find(i => i.role === 'hero')?.url ?? spec?.images.find(i => i.role === 'pattern')?.url ?? FALLBACK_RENDER;
-const statusOf = (spec: ApiSpec | undefined, versions: number): Product['status'] => spec?.arcade?.productId ? 'En evaluación' : versions > 0 ? 'Con versiones' : 'Idea';
+const statusOf = (spec: ApiSpec | undefined, versions: number): Product['status'] => spec?.arcade?.productId ? 'In evaluation' : versions > 0 ? 'Has versions' : 'Idea';
 
 function toProduct(view: ApiProductView, spec: ApiSpec | undefined, opts: { id: string; slug: string; parentId: string | null; author: string; createdAt: string; apiId: string; title?: string; change?: string; reason?: string; versions?: number }): Product {
   return {
@@ -79,7 +79,7 @@ export async function loadApiProducts(): Promise<{ products: Product[]; views: R
         products.push(toProduct(view, head?.content ?? spec, {
           id: vid, slug: vid, parentId: rootId, apiId: p.id,
           author: head?.author_type === 'agent' ? `agent:${head.author_id}` : (head?.author_id ?? br.created_by_id),
-          createdAt: br.created_at, title: head?.content.name, change: head?.summary, reason: head?.on_behalf_of_user_id ? `pedido por ${head.on_behalf_of_user_id.replace(/^u_/, '')}` : undefined,
+          createdAt: br.created_at, title: head?.content.name, change: head?.summary, reason: head?.on_behalf_of_user_id ? `requested by ${head.on_behalf_of_user_id.replace(/^u_/, '')}` : undefined,
         }));
       }
     }

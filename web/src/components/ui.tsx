@@ -11,8 +11,8 @@ export const StatusTag = ({ status }: { status: Status }) => <span className={`s
 export function ProductImage({ p, ratio = '4/3', children }: { p: Product; ratio?: string; children?: ReactNode }) {
   return (
     <div className="pimg" style={{ aspectRatio: ratio }}>
-      <img src={p.image} alt={`Render conceptual: ${p.title}`} loading="lazy" />
-      <span className="render-label">Render conceptual</span>
+      <img src={p.image} alt={`Concept render: ${p.title}`} loading="lazy" />
+      <span className="render-label">Concept render</span>
       {children}
     </div>
   );
@@ -22,12 +22,12 @@ export function DerivedFrom({ p }: { p: Product }) {
   return (
     <div className="derived">
       <Icon name="branch" size={16} />
-      <span>Derivado de <Link to={urlOf(parent)}>{parent.title}</Link></span>
-      <Link className="derived-tree" to={`${urlOf(rootOf(p))}?tab=versiones`}>Ver árbol</Link>
+      <span>Derived from <Link to={urlOf(parent)}>{parent.title}</Link></span>
+      <Link className="derived-tree" to={`${urlOf(rootOf(p))}?tab=versions`}>View tree</Link>
     </div>
   );
 }
-export const personName = (id: string) => (id === 'me' ? 'Tú' : people[id]?.name ?? id.replace(/^u_/, ''));
+export const personName = (id: string) => (id === 'me' ? 'You' : people[id]?.name ?? id.replace(/^u_/, ''));
 export function Tabs<T extends string>({ items, value, onChange }: { items: { id: T; label: string }[]; value: T; onChange: (v: T) => void }) {
   return (
     <div className="tabs" role="tablist">

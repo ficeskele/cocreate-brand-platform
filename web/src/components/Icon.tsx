@@ -1,4 +1,4 @@
-// Iconos de trazo fino (1.5px)
+// Thin-stroke icons (1.5px)
 const paths: Record<string, string> = {
   up: 'M12 19V5M6 11l6-6 6 6', down: 'M12 5v14M6 13l6 6 6-6',
   search: 'M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4', bell: 'M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15L6 16zM10 21h4',

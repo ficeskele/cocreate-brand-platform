@@ -47,7 +47,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     loadApiProducts().then(({ products: ap, views }) => {
       extra.splice(0, extra.length, ...ap); setViews(views); setBackend('online');
       setProducts(ps => [...ps.filter(p => p.source !== 'api'), ...ap]);
-    }).catch(() => setBackend('offline')); // sin backend: solo datos Demo
+    }).catch(() => setBackend('offline')); // no backend: Demo data only
   }, []);
   useEffect(() => { reloadApi(); }, [reloadApi]);
   const tRef = useRef<number | undefined>(undefined);
@@ -58,14 +58,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [user]);
   const signUp = useCallback((u: User) => {
     setUser(u); setAuthOpen(false);
-    // Continúa la acción pendiente (R2)
+    // Resume the pending action (R2)
     setPending(p => { if (p) setTimeout(p.run, 0); return null; });
   }, []);
   const value = useMemo<Ctx>(() => ({
     user, signUp, signOut: () => { setUser(null); setMode('consumer'); },
     mode, setMode, products, addProduct: p => setProducts(ps => [...ps, p]),
     comments, addComment: c => setComments(cs => [...cs, c]),
-    votes, vote: (id, v) => setVotes(s => ({ ...s, [id]: s[id] === v ? null : v })), // exclusivo y reversible (R5)
+    votes, vote: (id, v) => setVotes(s => ({ ...s, [id]: s[id] === v ? null : v })), // exclusive and reversible (R5)
     follows, toggleFollow: id => setFollows(s => ({ ...s, [id]: !s[id] })),
     interest, setInterest: (id, i) => setInterestS(s => ({ ...s, [id]: i })),
     minRoyalty, setMinRoyalty: (id, v) => setMinRoyaltyS(s => ({ ...s, [id]: v })),

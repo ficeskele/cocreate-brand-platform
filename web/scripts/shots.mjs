@@ -3,19 +3,19 @@ const B = process.env.BASE_URL ?? 'http://localhost:3456/app';
 const widths = { mobile: 390, tablet: 834, desktop: 1440 };
 const only = process.argv[2];
 const pages = [
-  ['feed', '/'], ['detalle', '/i/bolso-bici'], ['detalle-version', '/i/bolso-bici/v/bolso-bici-botella'],
-  ['registro', '/i/bolso-bici', async p => { await p.getByRole('button', { name: 'Crear versión' }).click(); await p.waitForSelector('.modal'); }],
-  ['buscar', '/buscar', async p => { await p.fill('input', 'bolso bici'); }],
-  ['buscar-vacio', '/buscar', async p => { await p.fill('input', 'paraguas plegable'); }],
-  ['comentarios-pins', '/i/bolso-bici/v/bolso-bici-botella?pin=1'],
-  ['interes', '/i/bolso-bici/v/bolso-bici-botella?tab=interes'],
-  ['versiones', '/i/bolso-bici?tab=versiones'],
-  ['ganancias', '/ganancias'], ['notificaciones', '/notificaciones'], ['perfil', '/perfil'],
-  ['feed-cargando', '/estado/cargando'], ['feed-error', '/estado/error'],
+  ['feed', '/'], ['detail', '/i/bike-bag'], ['detail-version', '/i/bike-bag/v/bottle-pocket'],
+  ['signup', '/i/bike-bag', async p => { await p.getByRole('button', { name: 'Create version' }).click(); await p.waitForSelector('.modal'); }],
+  ['search', '/search', async p => { await p.fill('input', 'bike bag'); }],
+  ['search-empty', '/search', async p => { await p.fill('input', 'folding umbrella'); }],
+  ['comments-pins', '/i/bike-bag/v/bottle-pocket?pin=1'],
+  ['interest', '/i/bike-bag/v/bottle-pocket?tab=interest'],
+  ['versions', '/i/bike-bag?tab=versions'],
+  ['earnings', '/earnings'], ['notifications', '/notifications'], ['profile', '/profile'],
+  ['feed-loading', '/state/loading'], ['feed-error', '/state/error'],
 ];
 const browser = await chromium.launch();
 const issues = [];
-async function signin(p) { await p.goto(B + '/perfil'); await p.getByRole('button', { name: 'Crear cuenta' }).first().click(); await p.fill('input[autocomplete=nickname]', 'Sergio'); await p.fill('input[type=email]', 'sergio@demo.app'); await p.fill('input[type=password]', 'demodemo'); await p.getByRole('button', { name: /Crear cuenta y continuar/ }).click(); }
+async function signin(p) { await p.goto(B + '/profile'); await p.getByRole('button', { name: 'Create account' }).first().click(); await p.fill('input[autocomplete=nickname]', 'Sam'); await p.fill('input[type=email]', 'sam@demo.app'); await p.fill('input[type=password]', 'demodemo'); await p.getByRole('button', { name: /Create account and continue/ }).click(); }
 for (const [wn, w] of Object.entries(widths)) {
   if (only && only !== wn) continue;
   const ctx = await browser.newContext({ viewport: { width: w, height: w < 700 ? 844 : 1000 }, deviceScaleFactor: 1 });
@@ -26,10 +26,10 @@ for (const [wn, w] of Object.entries(widths)) {
     if (o.sw > o.iw || o.over.length) issues.push({ wn, name, ...o });
     await p.screenshot({ path: `shots/${name}-${w}.png`, fullPage: true });
   }
-  // flujos con cuenta
+  // flows that need an account
   await signin(p);
   const flow = [
-    ['crear-version-paso1', '/crear-version/bolso-bici'], ['aportes', '/aportes'],
+    ['create-version-step1', '/create-version/bike-bag'], ['contributions', '/contributions'],
   ];
   for (const [name, url] of flow) { await p.goto(B + url); await p.waitForTimeout(250); await p.screenshot({ path: `shots/${name}-${w}.png`, fullPage: true }); }
   await ctx.close();

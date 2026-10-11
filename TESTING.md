@@ -113,11 +113,11 @@ curl -s -X POST localhost:3456/brands/$BID/products -H 'content-type: applicatio
 
 http://localhost:3456/app/
 
-Expected: "Explorar" feed. Four **Demo** cards (bike bag, lamp, planter...) plus one card tagged **Backend**: "Clown Pillow" with a grey "Sin render todavía" placeholder. The grey line under the title says "Conectado al backend".
+Expected: the "Explore" feed. Four **Demo** cards (bike bag, lamp, planter...) plus one card tagged **Backend**: "Clown Pillow" with a grey "No render yet" placeholder. The grey line under the title says "Connected to the backend".
 
 ## 3. Open the idea and ask the agent
 
-Click the **Clown Pillow** card. You land on the detail page, tab **Conversación** (empty, tagged Backend).
+Click the **Clown Pillow** card. You land on the detail page, tab **Conversation** (empty, tagged Backend).
 
 In the text box type:
 
@@ -125,40 +125,40 @@ In the text box type:
 @agent:concept bright clown pattern, 20x20 linen
 ```
 
-Click **Publicar**.
+Click **Post**.
 
 Expected:
 - Your message appears, then an agent reply "Design done…".
-- A line "Agente: running · designing" appears, then "running · generating", "running · building", and after 1 to 2 minutes "succeeded · done".
+- A line "Agent: running · designing" appears, then "running · generating", "running · building", and after 1 to 2 minutes "succeeded · done".
 - The big image on the page still shows the placeholder. That is correct: main has not changed yet.
 
 ## 4. Review and merge the version
 
-Click tab **Versiones**.
+Click the **Versions** tab.
 
 Expected:
 - The version tree shows "Original · Clown Pillow" and one child "Clown Pillow · bright clown pattern…" by agent:concept. (The "Demo" badge next to the vote count is a leftover label from the PR; votes are demo-only.)
-- Panel **Propuestas abiertas** (Backend) shows the agent's summary. Click **Ver cambios** to list the changed fields.
+- Panel **Open proposals** (Backend) shows the agent's summary. Click **View changes** to list the changed fields.
 
-Switch user: top nav **Perfil** → "Usuario del backend" → pick **bob**. Go back (browser back or the Explorar → card → Versiones).
+Switch user: top nav **Profile** → "Backend user" → pick **bob**. Go back (browser back, or Explore → card → Versions).
 
-Click **Integrar propuesta**.
+Click **Merge proposal**.
 
 Expected:
-- Toast "Propuesta integrada".
+- Toast "Proposal merged".
 - The big image at the top becomes the clown pillow render from arcade.ai.
-- Panel **Coautores** shows alice, bob, and "Agente concept (por alice)".
+- Panel **Co-authors** shows alice, bob, and "Agent concept (on behalf of alice)".
 - Feed card for the idea now shows the render too.
 
 ## 5. Release and store
 
-Click tab **Tiendas** → **Crear release** → "Release v1 creado." → **Abrir tienda**.
+Click the **Stores** tab → **Create release** → "Release v1 created." → **Open store**.
 
-Expected: button becomes **Abrir checkout**, a link to checkout.arcade.ai. Do not pay: it is a real order.
+Expected: the button becomes **Open checkout**, a link to checkout.arcade.ai. Do not pay: it is a real order.
 
 ## 6. (Optional) one more round
 
-Back in **Conversación**, send `@agent:concept same clowns but in blue tones, 18x18 velvet`. A second version appears under Versiones with its own image; merge it the same way.
+Back in **Conversation**, send `@agent:concept same clowns but in blue tones, 18x18 velvet`. A second version appears under Versions with its own image; merge it the same way.
 
 ## Automated version of steps 3 to 5
 
@@ -174,6 +174,6 @@ Prints a JSON summary and writes screenshots to `web/docs/screenshots/e2e-*.png`
 | Backend (real, from our API) | Demo (fake data from the PR) |
 |---|---|
 | Ideas tagged **Backend**, their image, title, description | Bike bag, lamp, planter ideas |
-| Conversación messages and `@agent:concept` runs | Votes, Seguir, Compartir counts |
-| Versiones: tree children, Propuestas abiertas, Coautores | Interés tab, royalties, Ganancias |
-| Tiendas: Crear release, Abrir tienda (arcade.ai checkout) | Merchant mode (`/app/m`), Shopify preview |
+| Conversation messages and `@agent:concept` runs | Votes, Follow, Share counts |
+| Versions: tree children, Open proposals, Co-authors | Interest tab, royalties, Earnings |
+| Stores: Create release, Open store (arcade.ai checkout) | Merchant mode (`/app/m`), Shopify preview |

@@ -5,7 +5,7 @@ import { useApp } from '../state/AppState';
 import type { Product } from '../data/mock';
 import { useNavigate } from 'react-router-dom';
 
-// Pins sobre la imagen conectados a su thread (R7)
+// Pins on the image linked to their thread (R7)
 export function Comments({ p, initialPin }: { p: Product; initialPin?: number }) {
   const { comments, addComment, requireAuth, user } = useApp(); const nav = useNavigate();
   const list = comments.filter(c => c.productId === p.id);
@@ -16,43 +16,43 @@ export function Comments({ p, initialPin }: { p: Product; initialPin?: number })
   const refs = useRef<Record<number, HTMLDivElement | null>>({});
   useEffect(() => { if (sel && refs.current[sel]) refs.current[sel]!.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, [sel]);
   const nextN = Math.max(0, ...list.map(c => c.pin?.n ?? 0)) + 1;
-  const post = () => requireAuth('comentar', () => {
+  const post = () => requireAuth('comment', () => {
     if (!text.trim()) return;
-    addComment({ id: 'c' + Date.now(), productId: p.id, author: 'me', text, parentId: replyTo, time: 'ahora', pin: draftPin && !replyTo ? { n: nextN, ...draftPin } : undefined });
+    addComment({ id: 'c' + Date.now(), productId: p.id, author: 'me', text, parentId: replyTo, time: 'now', pin: draftPin && !replyTo ? { n: nextN, ...draftPin } : undefined });
     if (draftPin) setSel(nextN); setText(''); setDraftPin(null); setMarking(false); setReplyTo(null);
   });
   return (
     <div className="comments">
       <div className={`pin-stage${marking ? ' marking' : ''}`} onClick={e => { if (!marking) return; const r = (e.currentTarget as HTMLDivElement).getBoundingClientRect(); setDraftPin({ x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height }); }}>
         <ProductImage p={p}>
-          {list.filter(c => c.pin).map(c => <button key={c.id} className={`pin${sel === c.pin!.n ? ' on' : ''}`} style={{ left: `${c.pin!.x * 100}%`, top: `${c.pin!.y * 100}%` }} onClick={e => { e.stopPropagation(); setSel(c.pin!.n); }} aria-label={`Ver comentario del pin ${c.pin!.n}`}>{c.pin!.n}</button>)}
+          {list.filter(c => c.pin).map(c => <button key={c.id} className={`pin${sel === c.pin!.n ? ' on' : ''}`} style={{ left: `${c.pin!.x * 100}%`, top: `${c.pin!.y * 100}%` }} onClick={e => { e.stopPropagation(); setSel(c.pin!.n); }} aria-label={`View comment for pin ${c.pin!.n}`}>{c.pin!.n}</button>)}
           {draftPin && <span className="pin on" style={{ left: `${draftPin.x * 100}%`, top: `${draftPin.y * 100}%` }}>{nextN}</span>}
         </ProductImage>
       </div>
       <div className="comments-tools">
-        <button className="util" onClick={() => requireAuth('marcar en la imagen', () => { setMarking(m => !m); setDraftPin(null); })}><Icon name="pin" size={18} />{marking ? (draftPin ? 'Punto marcado' : 'Toca la imagen') : 'Marcar en imagen'}</button>
+        <button className="util" onClick={() => requireAuth('mark the image', () => { setMarking(m => !m); setDraftPin(null); })}><Icon name="pin" size={18} />{marking ? (draftPin ? 'Point marked' : 'Tap the image') : 'Mark on image'}</button>
       </div>
       <div className="threads">
-        {roots.length === 0 && <p className="muted">Aún no hay comentarios. Abre la conversación.</p>}
+        {roots.length === 0 && <p className="muted">No comments yet. Start the conversation.</p>}
         {roots.map(c => (
           <div key={c.id} ref={el => { if (c.pin) refs.current[c.pin.n] = el; }} className={`thread${c.pin && sel === c.pin.n ? ' on' : ''}`} onClick={() => c.pin && setSel(c.pin.n)}>
             <div className="comment">
               {c.pin ? <span className="pin static">{c.pin.n}</span> : <span className="avatar" aria-hidden>{personName(c.author)[0]}</span>}
               <div>
-                <p className="comment-head">{c.author === 'me' ? (user?.name ?? 'Tú') : personName(c.author)} · {c.time}{c.useful && <span className="useful">Feedback útil</span>}</p>
+                <p className="comment-head">{c.author === 'me' ? (user?.name ?? 'You') : personName(c.author)} · {c.time}{c.useful && <span className="useful">Useful feedback</span>}</p>
                 <p>{c.text}</p>
-                <div className="comment-actions"><button onClick={e => { e.stopPropagation(); setReplyTo(c.id); }}>Responder</button><button onClick={e => { e.stopPropagation(); requireAuth('convertir el feedback en versión', () => nav(`/crear-version/${p.slug}?desde=${c.id}`)); }}>Convertir en versión</button><button aria-label="Reportar"><Icon name="flag" size={14} /></button></div>
+                <div className="comment-actions"><button onClick={e => { e.stopPropagation(); setReplyTo(c.id); }}>Reply</button><button onClick={e => { e.stopPropagation(); requireAuth('turn the feedback into a version', () => nav(`/create-version/${p.slug}?from=${c.id}`)); }}>Turn into version</button><button aria-label="Report"><Icon name="flag" size={14} /></button></div>
               </div>
             </div>
-            {list.filter(r => r.parentId === c.id).map(r => <div key={r.id} className="comment reply"><span className="avatar" aria-hidden>{personName(r.author)[0]}</span><div><p className="comment-head">{r.author === 'me' ? (user?.name ?? 'Tú') : personName(r.author)} · {r.time}</p><p>{r.text}</p></div></div>)}
+            {list.filter(r => r.parentId === c.id).map(r => <div key={r.id} className="comment reply"><span className="avatar" aria-hidden>{personName(r.author)[0]}</span><div><p className="comment-head">{r.author === 'me' ? (user?.name ?? 'You') : personName(r.author)} · {r.time}</p><p>{r.text}</p></div></div>)}
           </div>
         ))}
       </div>
       <div className="composer">
-        {replyTo && <p className="small muted">Respondiendo · <button className="link" onClick={() => setReplyTo(null)}>cancelar</button></p>}
-        <label className="sr" htmlFor="composer">Comentario</label>
-        <textarea id="composer" rows={2} value={text} onChange={e => setText(e.target.value)} placeholder={draftPin ? `Comentario para el pin ${nextN}` : 'Escribe un comentario'} />
-        <Button onClick={post} disabled={!text.trim()}>Publicar</Button>
+        {replyTo && <p className="small muted">Replying · <button className="link" onClick={() => setReplyTo(null)}>cancel</button></p>}
+        <label className="sr" htmlFor="composer">Comment</label>
+        <textarea id="composer" rows={2} value={text} onChange={e => setText(e.target.value)} placeholder={draftPin ? `Comment for pin ${nextN}` : 'Write a comment'} />
+        <Button onClick={post} disabled={!text.trim()}>Post</Button>
       </div>
     </div>
   );

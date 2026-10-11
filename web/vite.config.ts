@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Servido por Hono en /app/*. En dev, /api → backend en :3456.
+// Served by Hono at /app/*. In dev, /api is proxied to the backend on :3456.
 export default defineConfig({
   base: '/app/',
   plugins: [react()],
