@@ -18,7 +18,7 @@ export default function Search() {
       {q.trim().length > 2 && (res.length ? (
         <ul className="results">{res.map(p => (
           <li key={p.id} className="result"><img src={p.image} alt="" /><div><Link to={urlOf(p)} className="result-title">{p.title}</Link><p className="small muted">{p.parentId ? 'Version' : 'Original'} · {personName(p.author)} · {p.category}</p></div>
-            <div className="result-actions"><Link to={urlOf(p)} className="btn btn-ghost">Open</Link><Button variant="secondary" onClick={() => requireAuth('create your version', () => nav(`/create-version/${p.slug}`))}>Create version</Button></div></li>))}</ul>
+            <div className="result-actions"><Link to={urlOf(p)} className="btn btn-ghost">Open</Link><Button variant="secondary" onClick={() => requireAuth('create your version', () => nav(`/create-version/${p.slug}`))}>Make your own version</Button></div></li>))}</ul>
       ) : <Empty title="We found no similar ideas" text={`Nobody has proposed “${q}” yet.`} action={<Button onClick={() => requireAuth('create this idea', () => nav(`/create?title=${encodeURIComponent(q)}`))}>Create this idea</Button>} />)}
       <section className="topics"><h2 className="label">Topics</h2><div className="chips">{topics.map(t => <Chip key={t} onClick={() => setQ(t)}>{t}</Chip>)}</div></section>
       {res.length > 0 && <p className="small">Not what you are looking for? <button className="link" onClick={() => requireAuth('create an original idea', () => nav(`/create?title=${encodeURIComponent(q)}`))}>Create an original idea</button></p>}

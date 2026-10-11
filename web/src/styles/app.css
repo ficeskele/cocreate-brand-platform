@@ -321,3 +321,5 @@ input::placeholder,textarea::placeholder{color:hsl(0 0% 50%)}
 .pin{width:32px;height:32px}
 .lsn-link{text-decoration:none;display:inline-flex;align-items:center;min-height:44px;border-radius:6px}
 .topnav.flex{display:none} @media (min-width:1024px){.topnav.flex{display:flex}}
+.cta-version{min-height:46px;padding:0 var(--space-5);gap:8px;white-space:nowrap;font-weight:600}
+@media (max-width:420px){.utility-row{flex-wrap:nowrap}.util-label{display:none}.utility-row .util{padding:0 12px}}

@@ -7,7 +7,7 @@ import { notifications } from '../data/mock';
 
 const consumerNav = [
   { to: '/explore', label: 'Explore', icon: 'explore', end: false }, { to: '/search', label: 'Search', icon: 'search' },
-  { to: '/contributions', label: 'Contributions', icon: 'layers' }, { to: '/earnings', label: 'Earnings', icon: 'wallet' }, { to: '/profile', label: 'Profile', icon: 'user' },
+  { to: '/contributions', label: 'My ideas', icon: 'layers' }, { to: '/earnings', label: 'Rewards', icon: 'wallet' }, { to: '/profile', label: 'Profile', icon: 'user' },
 ];
 const merchantNav = [
   { to: '/m', label: 'Opportunities', icon: 'grid', end: true }, { to: '/m/selected', label: 'Selected', icon: 'layers' },

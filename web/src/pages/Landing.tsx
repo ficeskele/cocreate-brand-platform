@@ -77,7 +77,7 @@ export default function Landing() {
             <span className="lm-wrap"><LiquidMetalButton label="Explore ideas" onClick={() => nav('/explore')} /></span>
             <Link to="/search" className="btn btn-secondary">Propose an idea</Link>
           </motion.div>
-          <motion.p {...fade(0.4)} className="ml-note">Scroll, drag or use ↑ ↓ on the wheel. Sorted by net votes (Demo). Images: concept renders.</motion.p>
+          <motion.p {...fade(0.4)} className="ml-note">Scroll, drag or use ↑ ↓ on the wheel. Sorted by net votes (Demo). Images: product concepts.</motion.p>
         </div>
         <motion.div {...fade(0.2)} className="ml-wheel">
           <WorksWheel items={items} label="Most supported" action="View idea" />

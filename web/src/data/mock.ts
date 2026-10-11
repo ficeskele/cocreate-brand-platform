@@ -18,17 +18,17 @@ export const people: Record<string, { name: string }> = {
 export const products: Product[] = [
   { id: 'p1', slug: 'bike-bag', parentId: null, title: 'Bike bag for the daily commute', author: 'anna', category: 'Mobility', status: 'Has versions', image: render('bike-bag'),
     need: 'Carry a laptop and groceries without everything shifting while pedaling.', description: 'Rigid side bag that clips onto the rear rack and converts to a shoulder bag when you get off.', usage: 'Short city trips, every day.',
-    features: ['Quick clip', 'Rigid base', 'Shoulder strap'], votes: { up: 128, down: 6 }, followers: 41, createdAt: '2026-09-28', imageRights: [{ label: 'Concept render', owner: 'anna', commercialOk: true }] },
+    features: ['Quick clip', 'Rigid base', 'Shoulder strap'], votes: { up: 128, down: 6 }, followers: 41, createdAt: '2026-09-28', imageRights: [{ label: 'Product concept', owner: 'anna', commercialOk: true }] },
   { id: 'p2', slug: 'bottle-pocket', parentId: 'p1', title: 'Version with a separate bottle compartment', author: 'lucas', category: 'Mobility', status: 'In evaluation', image: render('bottle-bag'),
     need: 'Carry a laptop and groceries without everything shifting while pedaling.', description: 'Same as the original, with an insulated side pocket for a 750 ml bottle.', usage: 'Short city trips, every day.',
     change: 'Add a separate bottle compartment', reason: 'Avoid carrying a second bag on short trips',
     features: ['Quick clip', 'Rigid base', 'Shoulder strap', 'Bottle pocket'], votes: { up: 86, down: 3 }, followers: 27, createdAt: '2026-10-03', imageRights: [{ label: 'Own image', owner: 'lucas', commercialOk: false }, { label: 'Inherited image', owner: 'anna', commercialOk: true }] },
   { id: 'p3', slug: 'folding-lamp', parentId: null, title: 'Folding desk lamp', author: 'sophie', category: 'Home', status: 'Idea', image: render('folding-lamp'),
     need: 'A lamp that fits in a backpack so you can work from anywhere.', description: 'Three-section folding arm, magnetic base, USB-C charging.', usage: 'Coworking spaces, libraries, travel.',
-    features: ['Folds flat', 'Magnetic base', 'USB-C'], votes: { up: 54, down: 2 }, followers: 19, createdAt: '2026-10-06', imageRights: [{ label: 'Concept render', owner: 'sophie', commercialOk: true }] },
-  { id: 'p4', slug: 'self-watering-planter', parentId: null, title: 'Self-watering planter for balconies', author: 'mark', category: 'Garden', status: 'Idea', image: render('self-watering-planter'),
-    need: 'Plants that survive two weeks of vacation.', description: 'Bottom reservoir with a capillary wick and a window to see the water level.', usage: 'Small balconies, kitchen herbs.',
-    features: ['2 l reservoir', 'Level window', 'Stackable'], votes: { up: 33, down: 1 }, followers: 12, createdAt: '2026-10-08', imageRights: [{ label: 'Concept render', owner: 'mark', commercialOk: true }] },
+    features: ['Folds flat', 'Magnetic base', 'USB-C'], votes: { up: 54, down: 2 }, followers: 19, createdAt: '2026-10-06', imageRights: [{ label: 'Product concept', owner: 'sophie', commercialOk: true }] },
+  { id: 'p4', slug: 'self-watering-planter', parentId: null, title: 'Self-watering planter for small balconies', author: 'mark', category: 'Garden', status: 'Idea', image: render('self-watering-planter'),
+    need: "Designed to keep plants watered while you're away for up to two weeks.", description: 'A proposed built-in reservoir would feed water through a wick, with a window showing when it needs a refill.', usage: 'Small balconies and kitchen herb gardens.',
+    features: ['2-liter water reservoir', 'Water-level window', 'Stackable design'], votes: { up: 33, down: 1 }, followers: 12, createdAt: '2026-10-08', imageRights: [{ label: 'Product concept', owner: 'mark', commercialOk: true }] },
 ];
 
 /** Products loaded from the backend; AppState fills it so byId/rootOf also resolve them. */
@@ -48,7 +48,7 @@ export const urlOf = (p: Product) => { const root = rootOf(p); return root.id ==
 export const topics = ['bike', 'balcony', 'desk', 'travel', 'kitchen', 'pets'];
 
 export const notifications: { id: string; kind: 'launch' | 'comment' | 'proposal' | 'vote'; title: string; detail: string; to: string; unread: boolean }[] = [
-  { id: 'n1', kind: 'proposal', title: 'Urban Route made a commercial proposal', detail: 'Version with bottle compartment · pending approval', to: '/earnings', unread: true },
+  { id: 'n1', kind: 'proposal', title: 'Urban Route made a commercial proposal', detail: 'Version with bottle compartment · awaiting agreement', to: '/earnings', unread: true },
   { id: 'n2', kind: 'comment', title: 'New pinned comment on your idea', detail: 'Sophie T. asked about the strap', to: '/i/bike-bag?pin=2', unread: true },
   { id: 'n3', kind: 'vote', title: 'Your version passed 80 votes', detail: 'Version with a separate bottle compartment', to: '/i/bike-bag/v/bottle-pocket', unread: false },
 ];
@@ -66,6 +66,6 @@ export const interest: Record<string, Interest> = new Proxy(interestData, { get:
 
 export const proposal = {
   merchant: 'Urban Route', retail: 35, royaltyPool: 5,
-  split: [{ who: 'anna', role: 'Original idea', amount: 2.5 }, { who: 'lucas', role: 'Version', amount: 2 }, { who: 'sophie', role: 'Useful feedback', amount: 0.5 }],
+  split: [{ who: 'anna', role: 'Original idea', amount: 2.5 }, { who: 'lucas', role: 'Community version', amount: 2 }, { who: 'sophie', role: 'Useful feedback', amount: 0.5 }],
   approvals: [{ who: 'anna', state: 'Approved' }, { who: 'lucas', state: 'Pending' }, { who: 'sophie', state: 'Pending' }] as { who: string; state: 'Approved' | 'Pending' }[],
 };

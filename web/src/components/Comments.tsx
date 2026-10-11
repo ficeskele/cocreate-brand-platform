@@ -30,10 +30,10 @@ export function Comments({ p, initialPin }: { p: Product; initialPin?: number })
         </ProductImage>
       </div>
       <div className="comments-tools">
-        <button className="util" onClick={() => requireAuth('mark the image', () => { setMarking(m => !m); setDraftPin(null); })}><Icon name="pin" size={18} />{marking ? (draftPin ? 'Point marked' : 'Tap the image') : 'Mark on image'}</button>
+        <button className="util" onClick={() => requireAuth('mark the image', () => { setMarking(m => !m); setDraftPin(null); })}><Icon name="pin" size={18} />{marking ? (draftPin ? 'Point marked' : 'Tap the image') : 'Add feedback on the image'}</button>
       </div>
       <div className="threads">
-        {roots.length === 0 && <p className="muted">No comments yet. Start the conversation.</p>}
+        {roots.length === 0 && <p className="muted">What would you change? Be the first to comment.</p>}
         {roots.map(c => (
           <div key={c.id} ref={el => { if (c.pin) refs.current[c.pin.n] = el; }} className={`thread${c.pin && sel === c.pin.n ? ' on' : ''}`} onClick={() => c.pin && setSel(c.pin.n)}>
             <div className="comment">
@@ -41,7 +41,7 @@ export function Comments({ p, initialPin }: { p: Product; initialPin?: number })
               <div>
                 <p className="comment-head">{c.author === 'me' ? (user?.name ?? 'You') : personName(c.author)} · {c.time}{c.useful && <span className="useful">Useful feedback</span>}</p>
                 <p>{c.text}</p>
-                <div className="comment-actions"><button onClick={e => { e.stopPropagation(); setReplyTo(c.id); }}>Reply</button><button onClick={e => { e.stopPropagation(); requireAuth('turn the feedback into a version', () => nav(`/create-version/${p.slug}?from=${c.id}`)); }}>Turn into version</button><button aria-label="Report"><Icon name="flag" size={14} /></button></div>
+                <div className="comment-actions"><button onClick={e => { e.stopPropagation(); setReplyTo(c.id); }}>Reply</button><button onClick={e => { e.stopPropagation(); requireAuth('turn the feedback into a version', () => nav(`/create-version/${p.slug}?from=${c.id}`)); }}>Turn this suggestion into a version</button><button aria-label="Report"><Icon name="flag" size={14} /></button></div>
               </div>
             </div>
             {list.filter(r => r.parentId === c.id).map(r => <div key={r.id} className="comment reply"><span className="avatar" aria-hidden>{personName(r.author)[0]}</span><div><p className="comment-head">{r.author === 'me' ? (user?.name ?? 'You') : personName(r.author)} · {r.time}</p><p>{r.text}</p></div></div>)}
@@ -50,9 +50,9 @@ export function Comments({ p, initialPin }: { p: Product; initialPin?: number })
       </div>
       <div className="composer">
         {replyTo && <p className="small muted">Replying · <button className="link" onClick={() => setReplyTo(null)}>cancel</button></p>}
-        <label className="sr" htmlFor="composer">Comment</label>
-        <textarea id="composer" rows={2} value={text} onChange={e => setText(e.target.value)} placeholder={draftPin ? `Comment for pin ${nextN}` : 'Write a comment'} />
-        <Button onClick={post} disabled={!text.trim()}>Post</Button>
+        <label className="sr" htmlFor="composer">Your feedback</label>
+        <textarea id="composer" rows={2} value={text} onChange={e => setText(e.target.value)} placeholder={draftPin ? `Comment for pin ${nextN}` : 'Share a suggestion or ask a question…'} />
+        <Button onClick={post} disabled={!text.trim()}>Post comment</Button>
       </div>
     </div>
   );

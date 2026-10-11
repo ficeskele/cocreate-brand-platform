@@ -6,13 +6,15 @@ import { byId, people, rootOf, urlOf, type Product, type Status } from '../data/
 export function Button({ variant = 'primary', block, children, ...rest }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'ghost'; block?: boolean }) {
   return <button {...rest} className={`btn btn-${variant}${block ? ' btn-block' : ''} ${rest.className ?? ''}`}>{children}</button>;
 }
+// Display labels; the underlying status values (and CSS classes) stay unchanged.
+export const statusLabel: Record<string, string> = { Idea: 'Concept', 'Has versions': 'Has versions', 'In evaluation': 'Under review', Launched: 'Available to buy' };
 export const Demo = ({ children = 'Demo' }: { children?: ReactNode }) => <span className="demo">{children}</span>;
-export const StatusTag = ({ status }: { status: Status }) => <span className={`status status-${status.replace(/\s/g, '-').toLowerCase()}`}>{status}</span>;
+export const StatusTag = ({ status }: { status: Status }) => <span className={`status status-${status.replace(/\s/g, '-').toLowerCase()}`}>{statusLabel[status] ?? status}</span>;
 export function ProductImage({ p, ratio = '4/3', children }: { p: Product; ratio?: string; children?: ReactNode }) {
   return (
     <div className="pimg" style={{ aspectRatio: ratio }}>
-      <img src={p.image} alt={`Concept render: ${p.title}`} loading="lazy" />
-      <span className="render-label">Concept render</span>
+      <img src={p.image} alt={`Product concept: ${p.title}`} loading="lazy" />
+      <span className="render-label">Product concept</span>
       {children}
     </div>
   );
@@ -22,7 +24,7 @@ export function DerivedFrom({ p }: { p: Product }) {
   return (
     <div className="derived">
       <Icon name="branch" size={16} />
-      <span>Derived from <Link to={urlOf(parent)}>{parent.title}</Link></span>
+      <span>Based on <Link to={urlOf(parent)}>{parent.title}</Link></span>
       <Link className="derived-tree" to={`${urlOf(rootOf(p))}?tab=versions`}>View tree</Link>
     </div>
   );

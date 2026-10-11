@@ -25,17 +25,17 @@ export function Published() {
 type AT = 'ideas' | 'versions' | 'following' | 'drafts';
 export function Contributions() {
   const { products, follows, user, requireAuth } = useApp(); const [t, setT] = useState<AT>('versions');
-  if (!user) return <div className="page narrow"><Empty icon="layers" title="Your contributions will appear here" text="Ideas, versions, what you follow and your drafts." action={<Button onClick={() => requireAuth('see your contributions', () => {})}>Create account</Button>} /></div>;
+  if (!user) return <div className="page narrow"><Empty icon="layers" title="Your next idea starts here." text="Ideas, versions, what you follow and your drafts." action={<Button onClick={() => requireAuth('see your ideas', () => {})}>Create account</Button>} /></div>;
   const mine = products.filter(p => p.author === 'me');
   const drafts = Object.keys(localStorage).filter(k => k.startsWith('droplab-draft-'));
   const list = t === 'ideas' ? mine.filter(p => !p.parentId) : t === 'versions' ? mine.filter(p => p.parentId) : t === 'following' ? products.filter(p => follows[p.id]) : [];
   return (
     <div className="page">
-      <header className="page-head"><h1>Contributions</h1></header>
-      <Tabs<AT> value={t} onChange={setT} items={[{ id: 'ideas', label: 'My ideas' }, { id: 'versions', label: 'Versions' }, { id: 'following', label: 'Following' }, { id: 'drafts', label: 'Drafts' }]} />
+      <header className="page-head"><h1>My ideas</h1></header>
+      <Tabs<AT> value={t} onChange={setT} items={[{ id: 'ideas', label: 'Ideas I started' }, { id: 'versions', label: 'Versions I created' }, { id: 'following', label: 'Ideas I follow' }, { id: 'drafts', label: 'Drafts' }]} />
       {t === 'drafts' ? (drafts.length ? <ul className="list">{drafts.map(k => <li key={k} className="list-item"><Icon name="layers" /><span>{k.includes('version') ? 'Version of ' + k.split('-').slice(3).join('-') : 'New idea'}</span><Link to={k.includes('version') ? `/create-version/${k.split('-').slice(3).join('-')}` : '/create'}>Continue</Link></li>)}</ul> : <Empty title="No drafts" text="They are saved automatically while you write." />)
         : list.length ? <div className="dl-grid">{list.map(p => <IdeaCard key={p.id} p={p} />)}</div>
-        : <Empty title={t === 'following' ? 'You are not following any idea yet' : 'You have not published yet'} text={t === 'following' ? 'Following is different from voting: it notifies you about news.' : 'Search for an idea and create your version.'} action={<Link className="btn btn-secondary" to="/search">Search ideas</Link>} />}
+        : <Empty title={t === 'following' ? 'You are not following any idea yet' : 'Your next idea starts here.'} text={t === 'following' ? 'Following is different from voting: it notifies you about news.' : 'Search for an idea and create your version.'} action={<Link className="btn btn-secondary" to="/search">Search ideas</Link>} />}
     </div>
   );
 }
@@ -44,19 +44,19 @@ export function Earnings() {
   const total = proposal.split.reduce((s, x) => s + x.amount, 0);
   return (
     <div className="page narrow">
-      <header className="page-head"><h1>Earnings</h1><p className="lede">Program in preparation. Everything here is illustrative. <Demo>Demo · pending</Demo></p></header>
+      <header className="page-head"><h1>Rewards</h1><p className="lede">Rewards depend on an agreed arrangement and eligible sales. Everything here is illustrative. <Demo>Demo · pending</Demo></p></header>
       <Tabs value={t} onChange={setT} items={[{ id: 'royalties', label: 'Royalties' }, { id: 'referrals', label: 'Referral commissions' }]} />
       {t === 'royalties' ? <>
         <div className="panel">
-          <div className="panel-head"><h3>Commercial proposal · {proposal.merchant}</h3><span className="status">Pending approval</span></div>
+          <div className="panel-head"><h3>Commercial proposal · {proposal.merchant}</h3><span className="status">Awaiting agreement</span></div>
           <p className="small muted">Version with a separate bottle compartment. Illustrative: no signed agreement and no payments.</p>
-          <dl className="money"><div><dt>Retail price</dt><dd>${proposal.retail.toFixed(2)}</dd></div><div><dt>TOTAL royalty pool per unit</dt><dd>${proposal.royaltyPool.toFixed(2)}</dd></div></dl>
-          <table className="split"><caption className="sr">Royalty pool split</caption><thead><tr><th>Contributor</th><th>Role</th><th>Per unit</th><th>Approval</th></tr></thead>
+          <dl className="money"><div><dt>Retail price</dt><dd>${proposal.retail.toFixed(2)}</dd></div><div><dt>Creator royalty pool per unit (total)</dt><dd>${proposal.royaltyPool.toFixed(2)}</dd></div></dl>
+          <table className="split"><caption className="sr">Proposed royalty split</caption><thead><tr><th>Contributor</th><th>Role</th><th>Per unit</th><th>Approval</th></tr></thead>
             <tbody>{proposal.split.map(s => { const ap = proposal.approvals.find(a => a.who === s.who)!; return <tr key={s.who}><td>{personName(s.who)}</td><td>{s.role}</td><td>${s.amount.toFixed(2)}</td><td><span className={`appr appr-${ap.state === 'Approved' ? 'approved' : 'pending'}`}>{ap.state}</span></td></tr>; })}</tbody>
             <tfoot><tr><td colSpan={2}>Total distributed</td><td>${total.toFixed(2)}</td><td /></tr></tfoot></table>
           <p className="tiny muted">The $5 pool is the total for all contributors, not per person. Commenting alone does not entitle you to royalties.</p>
         </div>
-        <div className="panel"><h3>Balance</h3><p className="big">—</p><p className="small muted">No real balance. It activates once there are verified sales and an approved agreement.</p></div>
+        <div className="panel"><h3>Estimated rewards</h3><p className="big">—</p><p className="small muted">No rewards yet. Nothing is earned until there's an agreement and eligible sales.</p></div>
       </> : <div className="panel"><h3>Referral commissions</h3><p className="small muted">Separate from royalties: they would be based on sales arriving through your shared links, not on votes.</p><dl className="money"><div><dt>Clicks on your links</dt><dd>38 <Demo /></dd></div><div><dt>Commission</dt><dd>Coming soon</dd></div></dl></div>}
     </div>
   );

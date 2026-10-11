@@ -74,9 +74,9 @@ export function Rights() {
     <p className="lede">Community images need their author's permission before commercial use.</p>
     <ul className="list">{p.imageRights.map((r, i) => <li key={i} className="list-item rights"><Icon name="image" /><div><p>{r.label}</p><p className="tiny muted">Author: {personName(r.owner)}</p></div>
       {r.commercialOk ? <span className="appr appr-approved">Approved</span> : req[i] ? <span className="appr appr-approved">Approved (simulated)</span> : <Button variant="secondary" onClick={() => { setReq({ ...req, [i]: true }); showToast('Permission approved (simulated)'); }}>Request permission</Button>}</li>)}</ul>
-    <div className="panel"><h3>Commercial proposal (illustrative)</h3><p className="small">Retail ${proposal.retail} · TOTAL royalty pool ${proposal.royaltyPool} per unit, split between {proposal.split.map(s => personName(s.who)).join(', ')}.</p><p className="tiny muted">Each contributor's private minimum proposal is visible only to the store. No payments in this demo.</p></div>
+    <div className="panel"><h3>Commercial proposal (illustrative)</h3><p className="small">Retail ${proposal.retail} · creator royalty pool ${proposal.royaltyPool} per unit (total), proposed split between {proposal.split.map(s => personName(s.who)).join(', ')}.</p><p className="tiny muted">Each contributor's requested royalty is visible only to the store. No payments in this demo.</p></div>
     {!allOk && <p className="small warn"><Icon name="alert" size={14} /> Approval missing: without it only the text would be imported.</p>}
-    <Button disabled={!allOk} onClick={() => nav(`/m/v/${p.slug}/preview`)}>Preview in Shopify</Button>
+    <Button disabled={!allOk} onClick={() => nav(`/m/v/${p.slug}/preview`)}>Create Shopify draft</Button>
   </div></Guard>;
 }
 export function ShopifyPreview() {
@@ -84,10 +84,10 @@ export function ShopifyPreview() {
   const p = products.find(x => x.slug === slug); const [ok, setOk] = useState(false);
   if (!p) return <Empty title="Not found" />;
   return <Guard><div className="page narrow">
-    <h1>Import preview</h1><p className="lede">Review before creating the draft. <Demo>Simulated Shopify connection</Demo></p>
+    <h1>Shopify draft preview</h1><p className="lede">Review before creating the draft. <Demo>Simulated Shopify connection</Demo></p>
     <div className="shopify">
       <ProductImage p={p} ratio="16/9" />
-      <dl className="kv"><div><dt>Title</dt><dd>Bike bag with bottle compartment</dd></div><div><dt>Price</dt><dd>${proposal.retail}.00 <Demo /></dd></div><div><dt>Shopify status</dt><dd>Draft (unpublished)</dd></div><div><dt>Source</dt><dd>{p.title} · {personName(p.author)} · derived from {rootOf(p).title}</dd></div><div><dt>Images</dt><dd>{p.imageRights.length} with commercial permission</dd></div><div><dt>Tags</dt><dd>mobility, bike, droplab</dd></div></dl>
+      <dl className="kv"><div><dt>Title</dt><dd>Bike bag with bottle compartment</dd></div><div><dt>Price</dt><dd>${proposal.retail}.00 <Demo /></dd></div><div><dt>Shopify status</dt><dd>Draft (unpublished)</dd></div><div><dt>Source</dt><dd>{p.title} · {personName(p.author)} · based on {rootOf(p).title}</dd></div><div><dt>Images</dt><dd>{p.imageRights.length} with commercial permission</dd></div><div><dt>Tags</dt><dd>mobility, bike, droplab</dd></div></dl>
     </div>
     <label className="check"><input type="checkbox" checked={ok} onChange={e => setOk(e.target.checked)} />I confirm creating a draft in my store. I understand this is not a product launch.</label>
     <div className="row-btns"><Button variant="secondary" onClick={() => nav(-1)}>Back</Button><Button disabled={!ok} onClick={() => { const id = 'd' + Date.now(); addDraft({ id, productId: p.id, title: p.title, createdAt: 'today', launched: false }); nav(`/m/draft/${id}`); }}>Create draft</Button></div>
@@ -98,8 +98,8 @@ export function DraftCreated() {
   if (!d) return <div className="page narrow"><Empty title="Draft not found" action={<Link className="btn btn-secondary" to="/m">Opportunities</Link>} /></div>;
   return <Guard><div className="page narrow center-page">
     <div className="success"><Icon name="check" size={28} /></div>
-    <h1>{d.launched ? 'Launch confirmed' : 'Draft created (Demo)'}</h1>
-    <p className="lede">{d.launched ? 'We notified the people who follow the idea and enabled launch alerts.' : '“Bike bag with bottle compartment” is a draft in your store. It is not launched yet and the community is not notified.'}</p>
+    <h1>{d.launched ? 'Launch confirmed' : 'Shopify draft preview (Demo)'}</h1>
+    <p className="lede">{d.launched ? 'We notified the people who follow the idea and enabled launch alerts.' : '“Bike bag with bottle compartment” is a simulated draft preview. Nothing was created in Shopify, it is not launched and the community is not notified.'}</p>
     <div className="row-btns"><Button variant="secondary" onClick={() => showToast('Opening Shopify (Demo)')}>Open in Shopify (Demo)</Button>{!d.launched && <Button onClick={() => launchDraft(d.id)}>Confirm launch</Button>}</div>
   </div></Guard>;
 }
@@ -107,7 +107,7 @@ export function Selected() {
   const { products, selected, drafts } = useApp();
   return <Guard><div className="page"><header className="page-head"><h1>Selected products</h1></header>
     {selected.length ? <ul className="list">{selected.map(id => { const p = products.find(x => x.id === id)!; return <li key={id} className="list-item"><img src={p.image} alt="" className="thumb" /><Link to={`/m/i/${p.slug}`}>{p.title}</Link></li>; })}</ul> : <Empty title="Nothing selected" />}
-    <h2 className="label">Drafts</h2>{drafts.length ? <ul className="list">{drafts.map(d => <li key={d.id} className="list-item"><Link to={`/m/draft/${d.id}`}>{d.title}</Link><span className="status">{d.launched ? 'Launched' : 'Draft'}</span></li>)}</ul> : <p className="small muted">No drafts yet.</p>}
+    <h2 className="label">Drafts</h2>{drafts.length ? <ul className="list">{drafts.map(d => <li key={d.id} className="list-item"><Link to={`/m/draft/${d.id}`}>{d.title}</Link><span className="status">{d.launched ? 'Available to buy (Demo)' : 'Draft'}</span></li>)}</ul> : <p className="small muted">No drafts yet.</p>}
   </div></Guard>;
 }
 export function Store() {

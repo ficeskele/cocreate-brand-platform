@@ -4,7 +4,7 @@ const widths = { mobile: 390, tablet: 834, desktop: 1440 };
 const only = process.argv[2];
 const pages = [
   ['landing', '/', async p => { for (let y = 0; y < 6000; y += 300) { await p.evaluate(v => window.scrollTo(0, v), y); await p.waitForTimeout(120); } await p.evaluate(() => window.scrollTo(0, 0)); await p.waitForTimeout(400); }], ['feed', '/explore'], ['detail', '/i/bike-bag'], ['detail-version', '/i/bike-bag/v/bottle-pocket'],
-  ['signup', '/i/bike-bag', async p => { await p.getByRole('button', { name: 'Create version' }).click(); await p.waitForSelector('.modal'); }],
+  ['signup', '/i/bike-bag', async p => { await p.getByRole('button', { name: 'Make your own version' }).click(); await p.waitForSelector('.modal'); }],
   ['search', '/search', async p => { await p.fill('input', 'bike bag'); }],
   ['search-empty', '/search', async p => { await p.fill('input', 'folding umbrella'); }],
   ['comments-pins', '/i/bike-bag/v/bottle-pocket?pin=1'],
