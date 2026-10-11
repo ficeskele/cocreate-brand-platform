@@ -1,8 +1,7 @@
 .env
 .arcade-api/
 node_modules
-data/
-!web/src/data/
+/data/
 dist/
 .DS_Store
 *.log

@@ -54,3 +54,24 @@ public/index.html  one-page frontend (vanilla JS, polls every 2 seconds)
 demo.sh         full demo path
 scripts/        serve.sh, arcade-smoke.ts, ui-clickthrough.mjs (headless Chrome clicks through Release and Open store)
 ```
+
+## Merchant prototype (`merchant/`, Shopify-side demo)
+
+The merchant experience lives independently in [`merchant/`](merchant/README.md). It uses React + TypeScript + Vite + Tailwind and does not require the creator backend or any API keys. It is a separate npm project (not part of the pnpm workspace); the creator app and the commands above are unchanged.
+
+```bash
+cd merchant
+npm ci
+npm run dev          # http://127.0.0.1:5173
+npm run build        # TypeScript check + production build
+npm test             # service and persistence tests
+npm run test:e2e     # full browser flow; requires Google Chrome
+```
+
+Implemented: discovery/search/category filters/sorting, six ideas with eighteen distinct branches, idea and branch detail, pending applications with proposed creator commission terms and explicit Demo Controls, approval-gated draft preparation, live commission and estimated profit calculations, and browser-persisted mock Shopify drafts. All data and local concept illustrations are mock; production costs are not Arcade quotations, and no real Shopify, Arcade, or commission payout API is called by this app.
+
+**Demo:** Discover an idea → select a branch → Apply to Sell → confirm → My Applications → Demo Controls: Approve → Prepare Product Draft → Create Product Draft → My Product Drafts.
+
+See the [merchant README](merchant/README.md) for architecture, limitations, preview/setup instructions, and the [proposed API contracts](merchant/docs/api-contracts.md) for future MUP endpoints and server-side Shopify `productCreate` / `productVariantsBulkUpdate` integration. These endpoints are proposals, not existing backend capabilities.
+
+> Known gap: `merchant/src/data/catalog.ts` (ideas, branches, categories, demo merchant, `getCreator`) was not included in PR #2 because the old `data/` ignore rule swallowed it. It is being rewritten; until it lands, `npm run build` and `npm test` in `merchant/` fail on that missing module.
