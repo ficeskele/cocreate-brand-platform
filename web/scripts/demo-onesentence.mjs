@@ -1,7 +1,7 @@
 // Visible, slow demo of the one-sentence setup in a real Chrome window.
 // Usage: node web/scripts/demo-onesentence.mjs ["your sentence"]   (server on :3456)
 import { chromium } from 'playwright';
-const SENTENCE = process.argv[2] ?? '小丑抱枕，顏色超鮮豔，我要我的房間超瘋';
+const SENTENCE = process.argv[2] ?? 'a pillow full of bright circus clowns to make my room go wild';
 const B = process.env.BASE_URL ?? 'http://localhost:3456/app';
 const API = B.replace(/\/app$/, '');
 const b = await chromium.launch({ channel: 'chrome', headless: false, slowMo: 300, args: ['--window-size=1440,1000', '--window-position=40,40'] });
@@ -54,8 +54,8 @@ try {
   if (!run || run.status !== 'succeeded') throw new Error('agent did not succeed: ' + (run?.error ?? 'timeout'));
   await sleep(3000);
   await say('Agent done. Open the Versions tab to see the generated product.'); await sleep(3000);
-  await p.goto(p.url().split('?')[0] + '?tab=versiones');
-  await p.locator('.panel', { has: p.locator('h3', { hasText: /Propuestas|Proposals|Open proposals/i }) }).locator('.stack').first().waitFor({ timeout: 15000 });
+  await p.goto(p.url().split('?')[0] + '?tab=versions');
+  await p.locator('.panel', { has: p.locator('h3', { hasText: /Open proposals/i }) }).locator('.stack').first().waitFor({ timeout: 15000 });
   await p.evaluate(() => document.querySelector('.tree')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   await say('One sentence → a real arcade.ai product with render, maker and price, waiting for merge. Window stays open 3 minutes.');
   await sleep(180000);
