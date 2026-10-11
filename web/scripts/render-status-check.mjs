@@ -13,8 +13,8 @@ try {
     await p.screenshot({ path: 'docs/screenshots/render-1-error.png' });
   }
   await p.goto(`${B}/app/i/api-${genPid}`); await p.waitForSelector('.render-stage'); await sleep(1500);
-  for (const [u, body] of [['u_alice', '@agent:concept bright circus clowns, style toile, cotton_velvet 18x18'], ['u_bob', '@agent:concept same clowns but pastel and calm, linen 20x20'], ['u_carol', '@agent:concept clowns riding cats, cute, canvas 16x16']]) {
-    await fetch(`${B}/products/${genPid}/messages`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-user-id': u }, body: JSON.stringify({ body }) });
+  for (const [u, body] of [['u_alice', 'bright circus clowns, style toile, cotton_velvet 18x18'], ['u_bob', 'same clowns but pastel and calm, linen 20x20'], ['u_carol', 'clowns riding cats, cute, canvas 16x16']]) {
+    await fetch(`${B}/products/${genPid}/generate`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-user-id': u }, body: JSON.stringify({ instruction: body }) });
   }
   await sleep(6000);
   out.running = { title: await p.locator('.gen-title').textContent().catch(() => null), runs: await p.locator('.gen-run').count(), stagesOn: await p.locator('.gen-stages li.on').allTextContents(), label: await p.locator('.render-label').textContent() };

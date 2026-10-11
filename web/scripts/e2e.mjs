@@ -1,5 +1,5 @@
 // End-to-end through the React UI against the real backend:
-// open a Backend idea -> post @agent:concept -> wait for the agent (arcade.ai, ~1-2 min) ->
+// open a Backend idea -> ask for a version in the Generate box -> wait for the agent (arcade.ai, ~1-2 min) ->
 // Versions: View changes + Merge proposal (as bob) -> Stores: Create release + Open store.
 // Usage: node web/scripts/e2e.mjs   (server on :3456, AGENT_MOCK_DESIGN=1 is fine)
 import { chromium } from 'playwright';
@@ -15,8 +15,8 @@ try {
   const before = await p.locator('.threads .thread').count();
   if (process.env.SKIP_AGENT) { out.agentFinal = 'skipped (SKIP_AGENT=1)'; } else {
   // 1. post a mention
-  await p.fill('#api-composer', '@agent:concept e2e test: add plum blossoms, use 20x20 linen');
-  await p.getByRole('button', { name: 'Post' }).click();
+  await p.fill('#api-generate', 'e2e test: add plum blossoms, use 20x20 linen');
+  await p.getByRole('button', { name: 'Generate a version' }).click();
   await p.waitForFunction(n => document.querySelectorAll('.threads .thread').length > n, before, { timeout: 15000 });
   await p.waitForSelector('.assist', { timeout: 10000 }); out.agentStarted = await p.locator('.assist').textContent();
 

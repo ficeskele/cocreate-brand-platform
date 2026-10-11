@@ -12,7 +12,10 @@ type Env = { Variables: { userId: string } };
 const app = new Hono<Env>();
 
 app.use("*", async (c, next) => {
-  c.set("userId", c.req.header("x-user-id") ?? "u_alice");
+  const userId = (c.req.header("x-user-id") ?? "u_alice").trim().slice(0, 40) || "u_alice";
+  c.set("userId", userId);
+  // Accounts are self-declared for the demo: any X-User-Id becomes a user on first sight.
+  run("INSERT OR IGNORE INTO user (id, handle) VALUES (?, ?)", userId, userId.replace(/^u_/, ""));
   await next();
 });
 app.onError((err, c) => {
@@ -108,8 +111,7 @@ app.get("/products/:id/coauthors", (c) => {
   return c.json(coauthors(c.req.param("id")));
 });
 
-// ---- messages / agent trigger ----
-const MENTION = /@agent:concept\s*(.*)/s;
+// ---- messages (discussion only) ----
 app.get("/products/:id/messages", (c) => {
   if (!getProduct(c.req.param("id"))) return notFound(c, "product");
   return c.json(all("SELECT * FROM message WHERE product_id = ? ORDER BY created_at, rowid", c.req.param("id")));
@@ -118,19 +120,25 @@ app.post("/products/:id/messages", async (c) => {
   const product = getProduct(c.req.param("id"));
   if (!product) return notFound(c, "product");
   const body = z.object({ body: z.string().min(1) }).parse(await c.req.json());
+  const message = addMessage({ productId: product.id, authorType: "user", authorId: c.get("userId"), body: body.body });
+  return c.json({ message, agent_run_id: null }, 201);
+});
+
+// ---- generation (explicit; separate from discussion) ----
+app.post("/products/:id/generate", async (c) => {
+  const product = getProduct(c.req.param("id"));
+  if (!product) return notFound(c, "product");
+  const body = z.object({ instruction: z.string().min(1).max(500) }).parse(await c.req.json());
   const userId = c.get("userId");
-  const m = MENTION.exec(body.body);
-  let agentRunId: string | null = null;
-  if (m) {
-    const main = getBranch(product.main_branch_id)!;
-    agentRunId = id();
-    run(
-      "INSERT INTO agent_run (id, product_id, agent, triggered_by_user_id, instruction, input_revision_id, status, stage) VALUES (?,?,?,?,?,?,?,?)",
-      agentRunId, product.id, "concept", userId, m[1].trim() || body.body, main.head_revision_id, "running", "designing",
-    );
-  }
-  const message = addMessage({ productId: product.id, authorType: "user", authorId: userId, body: body.body, agentRunId });
-  if (agentRunId) runConceptAgent(agentRunId).catch((e) => console.error(`[agent ${agentRunId}] crashed:`, e));
+  const main = getBranch(product.main_branch_id)!;
+  const agentRunId = id();
+  run(
+    "INSERT INTO agent_run (id, product_id, agent, triggered_by_user_id, instruction, input_revision_id, status, stage) VALUES (?,?,?,?,?,?,?,?)",
+    agentRunId, product.id, "concept", userId, body.instruction.trim(), main.head_revision_id, "running", "designing",
+  );
+  // The request is recorded in the thread so everyone sees who asked for what; it does not count as a discussion message.
+  const message = addMessage({ productId: product.id, authorType: "user", authorId: userId, body: `Asked the agent to generate a version: ${body.instruction.trim()}`, agentRunId });
+  runConceptAgent(agentRunId).catch((e) => console.error(`[agent ${agentRunId}] crashed:`, e));
   return c.json({ message, agent_run_id: agentRunId }, 201);
 });
 app.get("/agent-runs/:id", (c) => {
@@ -183,6 +191,9 @@ app.post("/releases/:id/open-store", async (c) => {
   if (!getRelease(c.req.param("id"))) return notFound(c, "release");
   return c.json(await openStore(c.req.param("id")), 201);
 });
+
+// Image URLs are relative since the app can be served from any host; rewrite rows written by older builds.
+run("UPDATE revision SET content = replace(content, 'http://localhost:3456/images/', '/images/') WHERE content LIKE '%http://localhost:3456/images/%'");
 
 // Agent runs execute in-process; any run still "running" at boot died with the previous process.
 const stale = run("UPDATE agent_run SET status = 'failed', stage = 'done', error = 'server restarted during the run; send @agent:concept again', updated_at = datetime('now') WHERE status = 'running'").changes;

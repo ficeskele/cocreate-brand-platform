@@ -50,6 +50,7 @@ export const api = {
   revision: (id: string) => req<ApiRevision>('GET', `/revisions/${id}`),
   messages: (id: string) => req<ApiMessage[]>('GET', `/products/${id}/messages`),
   postMessage: (id: string, body: string) => req<{ message: ApiMessage; agent_run_id: string | null }>('POST', `/products/${id}/messages`, { body }),
+  generate: (id: string, instruction: string) => req<{ message: ApiMessage; agent_run_id: string }>('POST', `/products/${id}/generate`, { instruction }),
   agentRun: async (id: string) => { const r = await req<ApiAgentRun>('GET', `/agent-runs/${id}`); return { id: r.id, stage: r.stage, status: r.status, error: r.error }; },
   coauthors: (id: string) => req<ApiCoauthor[]>('GET', `/products/${id}/coauthors`),
   proposal: (id: string) => req<ApiProposal & { source: ApiRevision; main: ApiRevision | null; diff: { path: string; kind: 'added' | 'changed' | 'removed'; before?: unknown; after?: unknown }[] }>('GET', `/proposals/${id}`),

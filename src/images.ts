@@ -9,7 +9,6 @@ import path from "node:path";
 export const IMAGE_DIR = path.resolve("data/images");
 mkdirSync(IMAGE_DIR, { recursive: true });
 
-const PUBLIC_BASE = process.env.PUBLIC_BASE_URL ?? `http://localhost:${process.env.PORT ?? 3456}`;
 
 export async function cacheImage(url: string, name: string): Promise<string> {
   const file = `${name}.png`;
@@ -19,5 +18,5 @@ export async function cacheImage(url: string, name: string): Promise<string> {
     if (!res.ok) throw new Error(`download ${name} failed: HTTP ${res.status}`);
     await writeFile(dest, Buffer.from(await res.arrayBuffer()));
   }
-  return `${PUBLIC_BASE}/images/${file}`;
+  return `/images/${file}`; // relative: works behind any host or tunnel
 }

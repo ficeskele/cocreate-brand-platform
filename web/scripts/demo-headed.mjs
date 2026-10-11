@@ -28,10 +28,10 @@ try {
   await p.locator('.card:has(.demo.live):not(:has(.card-derived)) .card-title a').first().click();
   await p.waitForSelector('.threads');
   if (process.env.SKIP_AGENT) { await say('Step 3 already done earlier: the agent reply is in the thread. Continuing with Versions.'); await sleep(4000); } else {
-  await say('Step 3 · Conversation tab. Ask the agent with @agent:concept'); await sleep(2500);
-  await p.locator('#api-composer').click();
-  await p.locator('#api-composer').pressSequentially('@agent:concept bright clown pattern, 20x20 linen', { delay: 40 });
-  await sleep(800); await p.getByRole('button', { name: 'Post' }).click();
+  await say('Step 3 · Conversation tab. Discussion is just discussion; the Generate box below asks the agent for a version.'); await sleep(2500);
+  await p.locator('#api-generate').click();
+  await p.locator('#api-generate').pressSequentially('bright clown pattern, 20x20 linen', { delay: 40 });
+  await sleep(800); await p.getByRole('button', { name: 'Generate a version' }).click();
   await p.waitForSelector('.assist', { timeout: 15000 });
   await say('Agent is running: designing → arcade.ai generating the pattern → building the product (1 to 2 minutes). Main image stays grey until merge.');
   const run = await waitAgent();

@@ -5,9 +5,9 @@ import { chromium } from 'playwright';
 const B = process.env.BASE_URL ?? 'http://localhost:3456/app';
 const API = B.replace(/\/app$/, '');
 const REQUESTS = [
-  ['u_alice', '@agent:concept bright circus clowns, style toile, cotton_velvet 18x18'],
-  ['u_bob', '@agent:concept same clowns but pastel and calm, linen 20x20'],
-  ['u_carol', '@agent:concept clowns riding cats, cute, canvas 16x16'],
+  ['u_alice', 'bright circus clowns, style toile, cotton_velvet 18x18'],
+  ['u_bob', 'same clowns but pastel and calm, linen 20x20'],
+  ['u_carol', 'clowns riding cats, cute, canvas 16x16'],
 ];
 const b = await chromium.launch({ channel: 'chrome', headless: false, slowMo: 250, args: ['--window-size=1440,1000', '--window-position=40,40'] });
 const ctx = await b.newContext({ viewport: null }); const p = await ctx.newPage();
@@ -20,11 +20,11 @@ try {
   if (!productId) { const brands = await (await fetch(`${API}/brands`)).json(); productId = brands[0]?.products[0]?.id; }
   if (!productId) throw new Error('no backend product; run the one-sentence demo first');
   await p.goto(`${B}/i/api-${productId}`); await p.waitForSelector('.detail-media');
-  await say('One idea. Three people. Each sends their own @agent:concept request; each becomes a branch.'); await sleep(4000);
+  await say('One idea. Three people. Each asks the agent for their own version; each becomes a branch.'); await sleep(4000);
 
   for (const [u, body] of REQUESTS) {
-    await say(`${u.slice(2)} asks: "${body.replace('@agent:concept ', '')}"`);
-    await fetch(`${API}/products/${productId}/messages`, { method: 'POST', headers: headers(u), body: JSON.stringify({ body }) });
+    await say(`${u.slice(2)} asks: "${body}"`);
+    await fetch(`${API}/products/${productId}/generate`, { method: 'POST', headers: headers(u), body: JSON.stringify({ instruction: body }) });
     await sleep(2500);
   }
   await p.evaluate(() => window.scrollTo({ top: 0, behavior: 'smooth' }));

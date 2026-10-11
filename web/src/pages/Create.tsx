@@ -53,7 +53,7 @@ export default function Create({ kind }: { kind: 'idea' | 'version' }) {
         const spec = { ...pred.product.spec, name: d.title || pred.product.spec.name, concept: d.description || pred.product.spec.concept, tagline: d.usage || pred.product.spec.tagline, category: d.category || pred.product.spec.category,
           features: d.features.split(',').map(x => x.trim()).filter(Boolean).map((text, i) => ({ id: `f${i + 1}`, text })) };
         const view = await api.createProduct(brand.id, spec.name, spec);
-        await api.postMessage(view.id, `@agent:concept ${pred.agentInstruction}`);
+        await api.generate(view.id, pred.agentInstruction);
         localStorage.removeItem(key); reloadApi();
         showToast('Created on the backend. The agent is generating on arcade.ai…');
         nav(`/i/api-${view.id}`);

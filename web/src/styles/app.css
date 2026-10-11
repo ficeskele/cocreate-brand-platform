@@ -333,3 +333,6 @@ input::placeholder,textarea::placeholder{color:hsl(0 0% 50%)}
 .gen-under{border:1px solid var(--color-border);border-radius:10px;padding:12px;background:var(--color-surface)}
 .gen-under .gen{max-width:none}
 .gen-under .gen-orb{width:28px;height:28px}
+.generate-box{margin-top:8px}
+.generate-box h3{display:flex;align-items:center;gap:6px}
+.generate-box .composer input{flex:1}

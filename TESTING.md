@@ -193,3 +193,25 @@ Goal: the user types one sentence; everything else is predicted and prefilled. P
 API only: `curl -X POST localhost:3456/predict -H 'content-type: application/json' -d '{"text":"a birthday necklace for my girlfriend"}'`
 
 On-screen demo: `cd web && node scripts/demo-onesentence.mjs "your sentence"`.
+
+
+---
+
+# Public demo (three people, three devices)
+
+Start locally, then open a tunnel:
+
+```bash
+scripts/serve.sh --mock                                  # terminal 1
+cloudflared tunnel --url http://localhost:3456 --no-autoupdate   # terminal 2; prints https://<random>.trycloudflare.com
+```
+
+Share `https://<random>.trycloudflare.com/app/` with the others. The laptop must stay on; the URL changes each time the tunnel restarts.
+
+Accounts: each person signs up in the app with their own display name (Profile or any "Create account" prompt). The name becomes their backend identity, so alice, bob and carol on three devices are three users; no password check (demo).
+
+Discussion and generation are separate:
+- **Conversation** (Post): just messages, synced live to everyone on the idea every 3 seconds. Nothing is generated.
+- **Generate a version** box under the thread: one instruction, one run (1 to 2 minutes on arcade.ai). The result is a new branch with its own render; the original never changes. Progress animates in the render area for everyone.
+
+API: `POST /products/:id/messages {body}` for discussion, `POST /products/:id/generate {instruction}` for a version.

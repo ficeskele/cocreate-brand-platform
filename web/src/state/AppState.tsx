@@ -58,6 +58,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [user]);
   const signUp = useCallback((u: User) => {
     setUser(u); setAuthOpen(false);
+    // The backend identity (X-User-Id) follows the display name, so three people on three devices are three users.
+    const slug = u.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 24);
+    if (slug) { persistUser(`u_${slug}`); setApiUserS(`u_${slug}`); }
     // Resume the pending action (R2)
     setPending(p => { if (p) setTimeout(p.run, 0); return null; });
   }, []);

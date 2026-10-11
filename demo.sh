@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # demo.sh: run the whole demo path with curl.
-#   brand -> product -> @agent:concept -> (Claude designs, arcade.ai generates) -> proposal -> merge -> release -> open store
+#   brand -> product -> generate (Claude designs, arcade.ai generates) -> proposal -> merge -> release -> open store
 # Requires the server running (pnpm start) and jq.
 set -euo pipefail
 B="${BASE_URL:-http://localhost:3456}"
@@ -25,9 +25,9 @@ PROD=$(curl -sf -X POST "$B/brands/$BID/products" -H "$J" -H 'x-user-id: u_alice
     "price_target":{"currency":"USD","min":null,"max":null},"images":[],"sourcing_notes":""}}')
 PID=$(jq -r .id <<<"$PROD"); echo "product $PID, main head $(jq -r .main_head.id <<<"$PROD")"
 
-step "3. Mention @agent:concept in the thread (alice)"
-MSG=$(curl -sf -X POST "$B/products/$PID/messages" -H "$J" -H 'x-user-id: u_alice' \
-  -d '{"body":"@agent:concept make a spring edition: add plum blossoms, use 20x20 linen"}')
+step "3. Ask the agent to generate a version (alice)"
+MSG=$(curl -sf -X POST "$B/products/$PID/generate" -H "$J" -H 'x-user-id: u_alice' \
+  -d '{"instruction":"make a spring edition: add plum blossoms, use 20x20 linen"}')
 RUN=$(jq -r .agent_run_id <<<"$MSG"); echo "agent_run $RUN"
 
 step "4. Poll /agent-runs/:id every 2 seconds"
