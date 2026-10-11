@@ -102,7 +102,9 @@ export function predict(input: string): Prediction {
     // keep the noun if the user wrote it; otherwise append the predicted one
     name = zhCore.includes(nounZh) ? zhCore.slice(0, zhCore.indexOf(nounZh) + nounZh.length).slice(-12) : `${zhCore.slice(0, 10)}${nounZh}`;
   } else {
+    const trailing = /^(in|the|a|an|of|for|with|and|to|on|at|by|from|that|is)$/i;
     const words = clause.replace(stop, "").split(/\s+/).filter(Boolean).slice(0, 5);
+    while (words.length > 1 && trailing.test(words[words.length - 1])) words.pop();
     const titled = words.map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
     name = new RegExp(nounEn.split(" ")[0], "i").test(titled) ? titled : `${titled} ${nounEn}`;
   }

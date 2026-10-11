@@ -184,5 +184,9 @@ app.post("/releases/:id/open-store", async (c) => {
   return c.json(await openStore(c.req.param("id")), 201);
 });
 
+// Agent runs execute in-process; any run still "running" at boot died with the previous process.
+const stale = run("UPDATE agent_run SET status = 'failed', stage = 'done', error = 'server restarted during the run; send @agent:concept again', updated_at = datetime('now') WHERE status = 'running'").changes;
+if (stale) console.log(`marked ${stale} in-flight agent run(s) as failed after restart`);
+
 const port = Number(process.env.PORT ?? 3456);
 serve({ fetch: app.fetch, port }, () => console.log(`cocreate-brand-platform on http://localhost:${port} (arcade.ai backend)`));
