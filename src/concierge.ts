@@ -25,7 +25,7 @@ export const isConfirmation = (text: string) => CONFIRM.test(text);
 export function draftReply(text: string, spec: ProductSpec, author: string): { body: string; draft: Draft } {
   const pred = predict(`${text}. ${spec.concept}`);
   const sel = Object.keys(pred.arcade.selections).length ? Object.values(pred.arcade.selections).slice(0, 2).join(" ") : "";
-  const instruction = `${text.trim().replace(/[.!?]+$/, "")}${pred.arcade.modelId ? `, style ${pred.arcade.modelId}` : ""}${sel ? `, ${sel}` : ""}`;
+  const instruction = `${text.trim().replace(/[.!?]+$/, "")}${pred.arcade.modelId ? `, style ${pred.arcade.modelId}` : ""}${sel ? `, ${sel}` : ""}, category ${pred.arcade.categoryName}`;
   // Name: the idea's current name plus the words that drove the match, e.g. "Clown Pillow (pastel, velvet)"
   const words = [...new Set(pred.similar.flatMap((s) => s.matched))].filter((w) => text.toLowerCase().includes(w)).slice(0, 3);
   const name = words.length ? `${spec.name} (${words.join(", ")})` : `${spec.name} (variant)`;

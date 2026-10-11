@@ -100,6 +100,7 @@ export default function Create({ kind }: { kind: 'idea' | 'version' }) {
           <p className="small muted">{pred.basis}</p>
           <dl className="kv"><div><dt>Name</dt><dd>{pred.product.spec.name}</dd></div><div><dt>Category</dt><dd>{pred.product.spec.category} · arcade.ai {pred.arcade.categoryName}{pred.arcade.modelId ? ` · style ${pred.arcade.modelId}` : ''}</dd></div><div><dt>Audience</dt><dd>{pred.product.spec.target_audience}</dd></div><div><dt>Features</dt><dd>{pred.product.spec.features.map(f => f.text).join(', ')}</dd></div><div><dt>Price band</dt><dd>USD {pred.product.spec.price_target.min}–{pred.product.spec.price_target.max}</dd></div><div><dt>Brand voice</dt><dd>{pred.brand.identity.voice} <span className="chips">{pred.brand.identity.palette.map(h => <span key={h} className="chip" style={{ background: h, color: '#fff', borderColor: h }}>{h}</span>)}</span></dd></div></dl>
           <p className="tiny muted">Similar ideas used: {pred.similar.map(s => s.title).join(' · ') || 'none'}. Mock data, not a trained model.</p>
+          <p className="small"><Icon name="alert" size={14} /> arcade.ai manufactures textiles and jewelry only. Your idea will be rendered as <strong>{pred.arcade.categoryName}</strong>; edit the sentence if that is not what you meant.</p>
         </div>}
       </>)}
       {step === 1 && <>

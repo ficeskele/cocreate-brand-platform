@@ -186,17 +186,30 @@ async function designWithClaude(ctx: DesignCtx): Promise<SubmitSpec> {
  * product's concept and tagline become the arcade.ai prompt verbatim. Text fields are left untouched.
  * Size like "20x20" and a fabric keyword in the instruction are honoured; otherwise category defaults apply.
  */
-function simpleDesign(input: ProductSpec, instruction: string, categoryId: string): SubmitSpec {
-  const text = `${instruction} ${input.concept} ${input.tagline}`;
+/** Pick the arcade.ai print category named in the instruction ("category Scarves"); default to pillows. */
+async function resolveCategory(instruction: string, cats: arcade.Category[]) {
+  const wanted = /category\s+([A-Za-z][A-Za-z ]+?)\s*(?:,|$)/i.exec(instruction)?.[1]?.trim().toLowerCase();
+  const print = cats.filter((c) => c.world === "print");
+  const byName = wanted ? print.find((c) => c.name.toLowerCase() === wanted) ?? print.find((c) => c.name.toLowerCase().includes(wanted)) : undefined;
+  const cat = byName ?? print.find((c) => /decorative pillow/i.test(c.name)) ?? print[0];
+  if (!cat) throw new Error("arcade.ai returned no print categories");
+  // defaults for that category, then honour a size / fabric from the instruction only if the category offers it
+  const detail = await arcade.getCategory(cat.categoryId, {});
+  const selections = { ...detail.selections };
   const size = /(\d{1,2})\s*[x×]\s*(\d{1,2})/i.exec(instruction);
-  const fabricWords: Array<[RegExp, string]> = [
-    [/velvet/i, "cotton_velvet"], [/soft linen/i, "soft_linen"], [/linen/i, "linen"], [/fine cotton/i, "fine_cotton"],
-  ];
+  const fabricWords: Array<[RegExp, string]> = [[/velvet/i, "cotton_velvet"], [/soft linen/i, "soft_linen"], [/linen/i, "linen"], [/fine cotton/i, "fine_cotton"]];
   const fabric = fabricWords.find(([re]) => re.test(instruction))?.[1];
+  const offers = (key: string, value: string) => detail.options.find((o) => o.key === key)?.values.some((v) => v.value === value && v.available);
+  if (size && offers("size", `${size[1]}x${size[2]}`)) selections.size = `${size[1]}x${size[2]}`;
+  if (fabric && offers("fabric", fabric)) selections.fabric = fabric;
+  return { cat, selections };
+}
+
+function simpleDesign(input: ProductSpec, instruction: string, categoryId: string, categoryName: string, selections: Record<string, string>): SubmitSpec {
   const style = /style\s*([a-z0-9-]+)/i.exec(instruction)?.[1] ?? "";
-  const selections: Record<string, string> = { fabric: fabric ?? "canvas", size: size ? `${size[1]}x${size[2]}` : "18x18", embellishment: "none", insert: "none" };
+  const sel = Object.values(selections).filter((v) => v !== "none").join(", ");
   return {
-    summary: `Simple mode (no Claude): generated an arcade.ai pattern from your words "${instruction}" and the product concept, then built a Decorative Pillow (${selections.fabric}, ${selections.size}). Text fields were not rewritten.`,
+    summary: `Simple mode (no Claude): generated an arcade.ai pattern from your words "${instruction}" and the product concept, then built a ${categoryName}${sel ? ` (${sel})` : ""}. Text fields were not rewritten.`,
     spec: {
       // Versions need a distinguishable name in lists; the rest of the text stays untouched.
       name: `${input.name} · ${instruction.replace(/\s+/g, " ").slice(0, 24)}`,
@@ -251,9 +264,8 @@ export async function runConceptAgent(runId: string) {
     const cats = await arcade.listCategories();
     const styles = await arcade.listModels();
     if (process.env.AGENT_MOCK_DESIGN === "1") {
-      const pillows = cats.find((c) => c.world === "print" && /decorative pillow/i.test(c.name)) ?? cats.find((c) => c.world === "print");
-      if (!pillows) throw new Error("arcade.ai returned no print categories");
-      submitted = simpleDesign(inputSpec, agentRun.instruction, pillows.categoryId);
+      const { cat, selections } = await resolveCategory(agentRun.instruction, cats);
+      submitted = simpleDesign(inputSpec, agentRun.instruction, cat.categoryId, cat.name, selections);
       toolCalls.push({ tool: "simple_design", input: { instruction: agentRun.instruction }, output: submitted });
       setRun({ tool_calls: JSON.stringify(toolCalls) });
     } else {
