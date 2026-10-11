@@ -110,6 +110,7 @@ CREATE TABLE IF NOT EXISTS store (
 );
 `);
 
+try { db.exec("ALTER TABLE message ADD COLUMN draft TEXT"); } catch { /* column exists */ }
 db.prepare(`INSERT OR IGNORE INTO user (id, handle) VALUES ('u_alice','alice'),('u_bob','bob'),('u_carol','carol')`).run();
 
 export const id = () => nanoid(12);
@@ -218,16 +219,18 @@ export function addMessage(opts: {
   authorId: string;
   body: string;
   agentRunId?: string | null;
+  draft?: unknown;
 }) {
   const msgId = id();
   run(
-    "INSERT INTO message (id, product_id, author_type, author_id, body, agent_run_id) VALUES (?,?,?,?,?,?)",
+    "INSERT INTO message (id, product_id, author_type, author_id, body, agent_run_id, draft) VALUES (?,?,?,?,?,?,?)",
     msgId,
     opts.productId,
     opts.authorType,
     opts.authorId,
     opts.body,
     opts.agentRunId ?? null,
+    opts.draft === undefined ? null : JSON.stringify(opts.draft),
   );
   return one("SELECT * FROM message WHERE id = ?", msgId)!;
 }

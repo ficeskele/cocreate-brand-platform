@@ -26,7 +26,8 @@ export interface ApiSpec {
 export interface ApiRevision { id: string; branch_id: string; author_type: 'user' | 'agent'; author_id: string; on_behalf_of_user_id: string | null; content: ApiSpec; summary: string; created_at: string }
 export interface ApiBranch { id: string; product_id: string; name: string; kind: 'main' | 'human' | 'agent'; head_revision_id: string | null; created_by_type: string; created_by_id: string; created_at: string }
 export interface ApiProposal { id: string; product_id: string; source_branch_id: string; source_revision_id: string; status: 'open' | 'merged'; opened_by_type: string; opened_by_id: string; summary: string; created_at: string }
-export interface ApiMessage { id: string; product_id: string; author_type: 'user' | 'agent'; author_id: string; body: string; agent_run_id: string | null; created_at: string }
+export interface ApiDraft { instruction: string; name: string; categoryName: string; modelId: string | null; selections: Record<string, string>; palette: string[]; priceBand: [number | null, number | null]; basis: string }
+export interface ApiMessage { id: string; product_id: string; author_type: 'user' | 'agent'; author_id: string; body: string; agent_run_id: string | null; created_at: string; draft?: string | null }
 export interface ApiCoauthor { type: 'user' | 'agent'; id: string; on_behalf_of: string | null; revisions: number; handle: string }
 export interface ApiProductView { id: string; brand_id: string; name: string; main_branch_id: string; created_at: string; main_head: ApiRevision | null; branches: ApiBranch[]; open_proposals: ApiProposal[]; messages: ApiMessage[] }
 export interface ApiBrand { id: string; name: string; slug: string; identity: { mission: string; voice: string; palette: string[] }; created_by: string; products: { id: string; name: string }[] }

@@ -7,6 +7,7 @@ import { ProductSpec, diffSpec } from "./spec.js";
 import { runConceptAgent } from "./agent.js";
 import { coauthors, createRelease, getRelease, openStore } from "./release.js";
 import { predict } from "./predict.js";
+import { draftReply, isConfirmation, type Draft } from "./concierge.js";
 
 type Env = { Variables: { userId: string } };
 const app = new Hono<Env>();
@@ -120,26 +121,51 @@ app.post("/products/:id/messages", async (c) => {
   const product = getProduct(c.req.param("id"));
   if (!product) return notFound(c, "product");
   const body = z.object({ body: z.string().min(1) }).parse(await c.req.json());
-  const message = addMessage({ productId: product.id, authorType: "user", authorId: c.get("userId"), body: body.body });
-  return c.json({ message, agent_run_id: null }, 201);
+  const userId = c.get("userId");
+  const message = addMessage({ productId: product.id, authorType: "user", authorId: userId, body: body.body });
+
+  // "go" confirms the latest draft the agent proposed in this thread
+  if (isConfirmation(body.body)) {
+    const last = one<{ draft: string }>("SELECT draft FROM message WHERE product_id = ? AND author_type = 'agent' AND draft IS NOT NULL ORDER BY created_at DESC, rowid DESC LIMIT 1", product.id);
+    if (!last) {
+      addMessage({ productId: product.id, authorType: "agent", authorId: "concept", body: "There is no draft to confirm yet. Tell me what you would change and I will propose one." });
+      return c.json({ message, agent_run_id: null }, 201);
+    }
+    const draft = JSON.parse(last.draft) as Draft;
+    const agentRunId = startGeneration(product.id, userId, draft.instruction);
+    return c.json({ message, agent_run_id: agentRunId }, 201);
+  }
+
+  // otherwise the agent answers with a concrete draft and asks for confirmation
+  const main = getBranch(product.main_branch_id)!;
+  const head = main.head_revision_id ? getRevision(main.head_revision_id) : undefined;
+  const spec = ProductSpec.parse(head?.content ?? {});
+  const { body: replyBody, draft } = draftReply(body.body, spec, userId);
+  const reply = addMessage({ productId: product.id, authorType: "agent", authorId: "concept", body: replyBody, draft });
+  return c.json({ message, reply, agent_run_id: null }, 201);
 });
+
+/** Create an agent run for `instruction`, record who asked in the thread, and start it. */
+function startGeneration(productId: string, userId: string, instruction: string) {
+  const product = getProduct(productId)!;
+  const main = getBranch(product.main_branch_id)!;
+  const agentRunId = id();
+  run(
+    "INSERT INTO agent_run (id, product_id, agent, triggered_by_user_id, instruction, input_revision_id, status, stage) VALUES (?,?,?,?,?,?,?,?)",
+    agentRunId, product.id, "concept", userId, instruction.trim(), main.head_revision_id, "running", "designing",
+  );
+  addMessage({ productId: product.id, authorType: "user", authorId: userId, body: `Asked the agent to generate a version: ${instruction.trim()}`, agentRunId });
+  runConceptAgent(agentRunId).catch((e) => console.error(`[agent ${agentRunId}] crashed:`, e));
+  return agentRunId;
+}
 
 // ---- generation (explicit; separate from discussion) ----
 app.post("/products/:id/generate", async (c) => {
   const product = getProduct(c.req.param("id"));
   if (!product) return notFound(c, "product");
   const body = z.object({ instruction: z.string().min(1).max(500) }).parse(await c.req.json());
-  const userId = c.get("userId");
-  const main = getBranch(product.main_branch_id)!;
-  const agentRunId = id();
-  run(
-    "INSERT INTO agent_run (id, product_id, agent, triggered_by_user_id, instruction, input_revision_id, status, stage) VALUES (?,?,?,?,?,?,?,?)",
-    agentRunId, product.id, "concept", userId, body.instruction.trim(), main.head_revision_id, "running", "designing",
-  );
-  // The request is recorded in the thread so everyone sees who asked for what; it does not count as a discussion message.
-  const message = addMessage({ productId: product.id, authorType: "user", authorId: userId, body: `Asked the agent to generate a version: ${body.instruction.trim()}`, agentRunId });
-  runConceptAgent(agentRunId).catch((e) => console.error(`[agent ${agentRunId}] crashed:`, e));
-  return c.json({ message, agent_run_id: agentRunId }, 201);
+  const agentRunId = startGeneration(product.id, c.get("userId"), body.instruction);
+  return c.json({ agent_run_id: agentRunId }, 201);
 });
 app.get("/agent-runs/:id", (c) => {
   const row = one("SELECT * FROM agent_run WHERE id = ?", c.req.param("id"));

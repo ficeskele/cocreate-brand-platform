@@ -1,6 +1,6 @@
 // Panels wired to the real backend (no Demo data).
 import { useCallback, useEffect, useState } from 'react';
-import { api, type ApiCoauthor, type ApiMessage } from '../data/api';
+import { api, type ApiCoauthor, type ApiDraft, type ApiMessage } from '../data/api';
 import { useApp } from '../state/AppState';
 import type { Product } from '../data/mock';
 import { Button, Empty } from './ui';
@@ -16,13 +16,16 @@ export function ApiConversation({ p }: { p: Product }) {
   useEffect(() => { load(); const t = setInterval(load, 3000); return () => clearInterval(t); }, [load]); // live for everyone in the room
   useEffect(() => { if (!run || run.status !== 'running') return; const t = setInterval(() => api.agentRun(run.id).then(r => { setRun(r); if (r.status !== 'running') load(); }).catch(() => {}), 2000); return () => clearInterval(t); }, [run, load]);
   const post = async () => { try { await api.postMessage(p.apiId!, text); setText(''); load(); } catch (e) { showToast('Could not post: ' + (e as Error).message); } };
+  const confirmDraft = async (d: ApiDraft) => { setBusy(true); try { const r = await api.generate(p.apiId!, d.instruction); load(); setRun({ id: r.agent_run_id, stage: 'designing', status: 'running' }); showToast('Generating on arcade.ai (1 to 2 minutes)'); } catch (e) { showToast('Could not start: ' + (e as Error).message); } finally { setBusy(false); } };
+  const parseDraft = (m: ApiMessage): ApiDraft | null => { try { return m.draft ? JSON.parse(m.draft) as ApiDraft : null; } catch { return null; } };
+  const latestDraftId = [...msgs ?? []].reverse().find(m => m.author_type === 'agent' && m.draft)?.id;
   const generate = async () => { setBusy(true); try { const r = await api.generate(p.apiId!, instruction); setInstruction(''); load(); setRun({ id: r.agent_run_id, stage: 'designing', status: 'running' }); showToast('Generating a version on arcade.ai (1 to 2 minutes)'); } catch (e) { showToast('Could not start: ' + (e as Error).message); } finally { setBusy(false); } };
   if (err) return <Empty icon="alert" title="We could not load the conversation" text={err} />;
   if (!msgs) return <p className="muted">Loading…</p>;
   return (
     <div className="stack">
-      <p className="small muted"><LiveTag /> Shared conversation about this idea. Updates live for everyone.</p>
-      <div className="threads">{msgs.length === 0 && <p className="muted">No messages yet.</p>}{msgs.map(m => <div key={m.id} className="thread"><div className="comment"><span className="avatar" aria-hidden>{m.author_type === 'agent' ? 'A' : who(m.author_id)[0]}</span><div><p className="comment-head">{m.author_type === 'agent' ? 'Agent' : who(m.author_id)} · {m.created_at}</p><p style={{ whiteSpace: 'pre-wrap' }}>{m.body}</p></div></div></div>)}</div>
+      <p className="small muted"><LiveTag /> Shared conversation about this idea, live for everyone. Describe a change and the agent answers with a draft; nothing is generated until you confirm.</p>
+      <div className="threads">{msgs.length === 0 && <p className="muted">No messages yet.</p>}{msgs.map(m => <div key={m.id} className="thread"><div className="comment"><span className="avatar" aria-hidden>{m.author_type === 'agent' ? 'A' : who(m.author_id)[0]}</span><div><p className="comment-head">{m.author_type === 'agent' ? 'Agent' : who(m.author_id)} · {m.created_at}</p><p style={{ whiteSpace: 'pre-wrap' }}>{m.body}</p>{m.author_type === 'agent' && m.draft && m.id === latestDraftId && (() => { const d = parseDraft(m); return d ? <div className="row-btns"><Button disabled={busy} onClick={() => confirmDraft(d)}><Icon name="sparkle" size={16} />Confirm and generate</Button><span className="tiny muted">or reply "go"</span></div> : null; })()}</div></div></div>)}</div>
       <div className="composer"><label className="sr" htmlFor="api-composer">Message</label><textarea id="api-composer" rows={2} value={text} onChange={e => setText(e.target.value)} placeholder="Write a message" /><Button disabled={!text.trim()} onClick={post}>Post</Button></div>
       <div className="panel generate-box">
         <h3><Icon name="sparkle" size={16} /> Generate a version</h3>
