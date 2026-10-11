@@ -73,7 +73,7 @@ function productView(productId: string) {
     ...product,
     main_head: head,
     branches: all("SELECT * FROM branch WHERE product_id = ? ORDER BY created_at", productId),
-    open_proposals: all("SELECT * FROM proposal WHERE product_id = ? AND status = 'open' ORDER BY created_at", productId),
+    open_proposals: all("SELECT * FROM proposal WHERE product_id = ? AND status = 'open' ORDER BY created_at DESC, rowid DESC", productId),
     messages: all("SELECT * FROM message WHERE product_id = ? ORDER BY created_at DESC, rowid DESC LIMIT 20", productId).reverse(),
   };
 }
