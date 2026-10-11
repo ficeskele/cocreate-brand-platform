@@ -1,5 +1,5 @@
 import { LiquidMetalButton } from '@/components/ui/liquid-metal-button';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useApp } from '../state/AppState';
 import { interest as agg, PRIVACY_MIN, rootOf, urlOf, proposal } from '../data/mock';
@@ -16,6 +16,8 @@ export default function Detail() {
   const { products, requireAuth, drafts } = useApp();
   const p = products.find(x => x.slug === (vslug ?? slug));
   const [tab, setTab] = useState<T>((sp.get('tab') as T) || 'conversation');
+  const [launchOpen, setLaunchOpen] = useState(false);
+  const launchButton = useRef<HTMLButtonElement>(null);
   useEffect(() => { setTab((sp.get('tab') as T) || 'conversation'); }, [sp, p?.id]);
   if (!p) return <div className="page"><Empty icon="alert" title="This idea does not exist or was removed" action={<Link className="btn btn-secondary" to="/explore">Back to Explore</Link>} /></div>;
   const root = rootOf(p); const a = agg[p.id]; const launched = drafts.find(d => d.productId === p.id && d.launched) || (p.status === 'Launched');
@@ -32,7 +34,7 @@ export default function Detail() {
           <p className="muted">by {personName(p.author)} {p.source === 'api' ? <LiveTag /> : <Demo />}</p>
           <div className="utility-row"><VoteControl p={p} /><FollowButton p={p} /><ShareButton p={p} /></div>
           <p className="tiny muted">Votes belong to this version and are not added to others. Voting signals interest, not a purchase.</p>
-          <div className="cta-metal"><span className="lm-wrap"><LiquidMetalButton label="Create version" onClick={() => requireAuth('create your version of this idea', () => nav(`/create-version/${p.slug}`))} /></span><span className="small muted">Branch it: your version gets its own votes.</span></div>
+          <div className="cta-metal"><span className="lm-wrap"><LiquidMetalButton label="Create version" onClick={() => requireAuth('create your version of this idea', () => nav(`/create-version/${p.slug}`))} /></span><button ref={launchButton} type="button" className="btn btn-secondary launch-product-trigger" onClick={() => setLaunchOpen(true)}>Launch as a Product <span aria-hidden="true">→</span></button><span className="small muted">Branch it: your version gets its own votes.</span></div>
           <section className="facts">
             {p.reason && <div><h2>What changes</h2><p>{p.change} <span className="muted">Reason: {p.reason}</span></p></div>}
             <div><h2>Need</h2><p>{p.need}</p></div>
@@ -65,6 +67,36 @@ export default function Detail() {
           : <Empty icon="store" title="Not in any store yet" text="When a store confirms a launch you will see it here. Follow the idea to find out." />)}
       </div>
       <p className="tiny muted">URL of this {p.parentId ? 'version' : 'idea'}: {urlOf(p)}</p>
+      {launchOpen && <LaunchProductDialog title={p.title} onClose={() => setLaunchOpen(false)} returnFocus={launchButton} />}
     </div>
   );
+}
+
+function LaunchProductDialog({ title, onClose, returnFocus }: { title: string; onClose: () => void; returnFocus: React.RefObject<HTMLButtonElement | null> }) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+    closeRef.current?.focus();
+    return () => { dialog.close(); returnFocus.current?.focus(); };
+  }, [returnFocus]);
+
+  return <dialog ref={dialogRef} className="launch-product-dialog" aria-labelledby="launch-product-title" aria-describedby="launch-product-intro" onCancel={event => { event.preventDefault(); onClose(); }} onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
+    <div className="launch-product-content">
+      <header className="launch-product-heading">
+        <div><p className="launch-product-eyebrow">COMMUNITY IDEA → REAL PRODUCT</p><h2 id="launch-product-title">Bring This Idea to Life</h2></div>
+        <button ref={closeRef} type="button" className="icon-btn" aria-label="Close dialog" onClick={onClose}><Icon name="close" /></button>
+      </header>
+      <p id="launch-product-intro" className="launch-product-intro">Here is how <strong>{title}</strong> could move from a community design to a product customers can buy.</p>
+      <ol className="launch-product-steps">
+        <li><span className="launch-product-number">1</span><div><p className="launch-product-service">ARCADE</p><h3>Production &amp; Pricing</h3><p>Arcade verifies manufacturing options and estimates production costs for the selected design.</p></div></li>
+        <li><span className="launch-product-number">2</span><div><p className="launch-product-service">SHOPIFY</p><h3>Find a Seller &amp; Launch</h3><p>Shopify merchants can discover community-created designs, apply to sell them, and prepare a product listing after creator approval.</p></div></li>
+        <li><span className="launch-product-number">3</span><div><p className="launch-product-service">ARCADE</p><h3>Make &amp; Ship</h3><p>Once customers purchase the product through Shopify, Arcade can handle on-demand manufacturing and shipping through a future integration.</p></div></li>
+      </ol>
+      <p className="launch-product-disclaimer" role="note">Demo preview only. No real Shopify listing, manufacturing order, commission payment, or fulfillment is triggered.</p>
+      <div className="launch-product-footer"><span className="small muted">Planned flow · no external services connected</span><button type="button" className="btn btn-secondary" onClick={onClose}>Close</button></div>
+    </div>
+  </dialog>;
 }
