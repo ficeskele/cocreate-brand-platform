@@ -16,9 +16,9 @@ export function AuthModal() {
   if (!authOpen) return null;
   const submit = (e: React.FormEvent) => {
     e.preventDefault(); const er: Record<string, string> = {};
-    if (mode === 'signup' && !name.trim()) er.name = 'Escribe cómo quieres aparecer';
-    if (!/^\S+@\S+\.\S+$/.test(email)) er.email = 'Revisa el email';
-    if (pw.length < 8) er.pw = 'Mínimo 8 caracteres';
+    if (mode === 'signup' && !name.trim()) er.name = 'How you want to appear';
+    if (!/^\S+@\S+\.\S+$/.test(email)) er.email = 'Check the email';
+    if (pw.length < 8) er.pw = 'At least 8 characters';
     setErrors(er); if (Object.keys(er).length) return;
     signUp({ name: name.trim() || email.split('@')[0], email, prefs: { activity, commercial } });
   };
@@ -26,25 +26,25 @@ export function AuthModal() {
     <div className="scrim" onClick={closeAuth}>
       <div className="modal" role="dialog" aria-modal="true" aria-labelledby="auth-title" onClick={e => e.stopPropagation()}>
         <div className="modal-head">
-          <h2 id="auth-title">{mode === 'signup' ? 'Únete para continuar' : 'Inicia sesión para continuar'}</h2>
-          <button className="icon-btn" onClick={closeAuth} aria-label="Cerrar"><Icon name="close" /></button>
+          <h2 id="auth-title">{mode === 'signup' ? 'Join to continue' : 'Sign in to continue'}</h2>
+          <button className="icon-btn" onClick={closeAuth} aria-label="Close"><Icon name="close" /></button>
         </div>
-        {pending && <p className="pending"><Icon name="check" size={16} />Después podrás {pending.label}. No perderás lo que estabas haciendo.</p>}
+        {pending && <p className="pending"><Icon name="check" size={16} />Afterwards you can {pending.label}. You won’t lose what you were doing.</p>}
         <form onSubmit={submit} noValidate>
-          {mode === 'signup' && <Field label="Nombre visible" error={errors.name}><input ref={first} value={name} onChange={e => setName(e.target.value)} autoComplete="nickname" /></Field>}
+          {mode === 'signup' && <Field label="Display name" error={errors.name}><input ref={first} value={name} onChange={e => setName(e.target.value)} autoComplete="nickname" /></Field>}
           <Field label="Email" error={errors.email}><input ref={mode === 'login' ? first : undefined} type="email" value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" /></Field>
-          <Field label="Contraseña" error={errors.pw}><input type="password" value={pw} onChange={e => setPw(e.target.value)} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} /></Field>
+          <Field label="Password" error={errors.pw}><input type="password" value={pw} onChange={e => setPw(e.target.value)} autoComplete={mode === 'signup' ? 'new-password' : 'current-password'} /></Field>
           {mode === 'signup' && (
             <fieldset className="prefs">
-              <legend>Notificaciones</legend>
-              <label className="check"><input type="checkbox" checked={activity} onChange={e => setActivity(e.target.checked)} />Actividad en ideas que sigo y lanzamientos confirmados</label>
-              <label className="check"><input type="checkbox" checked={commercial} onChange={e => setCommercial(e.target.checked)} />Novedades y comunicaciones comerciales</label>
+              <legend>Notifications</legend>
+              <label className="check"><input type="checkbox" checked={activity} onChange={e => setActivity(e.target.checked)} />Activity on ideas I follow and confirmed launches</label>
+              <label className="check"><input type="checkbox" checked={commercial} onChange={e => setCommercial(e.target.checked)} />News and marketing emails</label>
             </fieldset>
           )}
-          <Button type="submit" block>{mode === 'signup' ? 'Crear cuenta y continuar' : 'Entrar y continuar'}</Button>
+          <Button type="submit" block>{mode === 'signup' ? 'Create account and continue' : 'Sign in and continue'}</Button>
         </form>
-        <p className="small muted center">{mode === 'signup' ? '¿Ya tienes cuenta? ' : '¿Primera vez? '}<button className="link" onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')}>{mode === 'signup' ? 'Inicia sesión' : 'Crea una cuenta'}</button></p>
-        <p className="tiny muted center">Demo: no se envían datos a ningún servidor.</p>
+        <p className="small muted center">{mode === 'signup' ? 'Already have an account? ' : 'First time? '}<button className="link" onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')}>{mode === 'signup' ? 'Sign in' : 'Create an account'}</button></p>
+        <p className="tiny muted center">Demo: no data is sent to any server.</p>
       </div>
     </div>
   );

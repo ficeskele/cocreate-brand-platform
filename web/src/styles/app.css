@@ -53,7 +53,7 @@ p{margin:0}
 .demo{display:inline-flex;align-items:center;font-size:11px;line-height:1;padding:3px 6px;border:1px dashed var(--color-secondary);color:var(--color-secondary);border-radius:4px;font-weight:500;white-space:nowrap}
 .status{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-tiny);color:var(--color-secondary);white-space:nowrap}
 .status::before{content:'';width:6px;height:6px;border-radius:50%;border:1px solid currentColor}
-.status-lanzado,.status-viabilidad-confirmada{color:var(--color-text)} .status-lanzado::before,.status-viabilidad-confirmada::before{background:currentColor}
+.status-launched,.status-feasibility-confirmed{color:var(--color-text)} .status-launched::before,.status-feasibility-confirmed::before{background:currentColor}
 .private{font-size:11px;font-weight:500;background:var(--color-muted);padding:2px 6px;border-radius:4px;margin-left:6px;letter-spacing:0}
 
 /* Feed */
@@ -205,7 +205,7 @@ p{margin:0}
 .money{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-3);margin:0}
 .money div{background:var(--color-muted);border-radius:var(--radius-sm);padding:var(--space-3)} .money dt{font-size:var(--fs-tiny);color:var(--color-secondary)} .money dd{margin:0;font-size:20px;font-weight:600}
 .split{width:100%;border-collapse:collapse;font-size:var(--fs-small)} .split th,.split td{text-align:left;padding:10px 6px;border-bottom:var(--stroke) solid var(--color-border)} .split th{font-weight:500;color:var(--color-secondary);font-size:var(--fs-tiny)} .split tfoot td{font-weight:600;border:0}
-.appr{font-size:var(--fs-tiny);padding:2px 8px;border-radius:var(--radius-pill);border:1px solid var(--color-border);white-space:nowrap} .appr-aprobado{background:var(--color-text);color:var(--color-on-cta);border-color:var(--color-text)}
+.appr{font-size:var(--fs-tiny);padding:2px 8px;border-radius:var(--radius-pill);border:1px solid var(--color-border);white-space:nowrap} .appr-approved{background:var(--color-text);color:var(--color-on-cta);border-color:var(--color-text)}
 .big{font-size:32px;font-weight:600}
 .warn{display:flex;gap:6px;align-items:center}
 

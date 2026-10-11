@@ -44,9 +44,9 @@ export function toProducts(v: ApiProductView): Product[] {
     id: 'api:' + v.id, apiId: v.id, source: 'api', slug: slugify(v.name) + '-' + v.id.slice(0, 6), parentId: null, title: spec?.name ?? v.name, author: v.main_head?.author_id ?? 'u_alice',
     category: spec?.category ?? 'General', status: 'Idea', image: imgUrl(spec?.images?.find(i => i.role === 'hero')?.url ?? spec?.images?.[0]?.url),
     need: spec?.tagline ?? '', description: spec?.concept ?? '', usage: spec?.target_audience ?? '', features: spec?.features?.map(f => f.text) ?? [],
-    votes: { up: 0, down: 0 }, followers: 0, createdAt: v.created_at?.slice(0, 10) ?? '', imageRights: (spec?.images ?? []).map(i => ({ label: `Imagen ${i.role} (arcade.ai)`, owner: v.main_head?.author_id ?? 'u_alice', commercialOk: false })),
+    votes: { up: 0, down: 0 }, followers: 0, createdAt: v.created_at?.slice(0, 10) ?? '', imageRights: (spec?.images ?? []).map(i => ({ label: `Image ${i.role} (arcade.ai)`, owner: v.main_head?.author_id ?? 'u_alice', commercialOk: false })),
   };
-  const versions: Product[] = v.branches.filter(b => b.kind !== 'main').map(b => ({ ...base, id: 'api:' + v.id + ':' + b.id, apiBranchId: b.id, slug: base.slug + '-' + slugify(b.name), parentId: base.id, title: `${base.title} · ${b.name}`, author: b.created_by_id, change: `Rama “${b.name}”`, reason: b.created_by_type === 'agent' ? 'Propuesta del agente de concepto' : 'Propuesta de la comunidad' }));
+  const versions: Product[] = v.branches.filter(b => b.kind !== 'main').map(b => ({ ...base, id: 'api:' + v.id + ':' + b.id, apiBranchId: b.id, slug: base.slug + '-' + slugify(b.name), parentId: base.id, title: `${base.title} · ${b.name}`, author: b.created_by_id, change: `Branch “${b.name}”`, reason: b.created_by_type === 'agent' ? 'Concept agent proposal' : 'Community proposal' }));
   return [base, ...versions];
 }
 export async function loadApiProducts(): Promise<{ products: Product[]; views: Record<string, ApiProductView> }> {

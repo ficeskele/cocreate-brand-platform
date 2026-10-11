@@ -107,13 +107,13 @@ export function AsciiLoader({
   }, [src, cellSize, contrast, density, coverage, bgMode, animated, animSpeed, animIntensity, ink, paper, reduced]);
 
   return (
-    <div role="status" aria-live="polite" aria-label={title ?? "Cargando"} onClick={finish}
+    <div role="status" aria-live="polite" aria-label={title ?? "Loading"} onClick={finish}
       className={cn("fixed inset-0 z-[1000] flex cursor-pointer flex-col items-center justify-center transition-opacity duration-300", leaving && "pointer-events-none opacity-0", className)}
       style={{ background: paper, color: ink }}>
       <canvas ref={canvasRef} aria-hidden="true" className="block h-[58vh] w-full" />
       {title ? <p className="mt-6 text-center text-[clamp(1.5rem,4vw,2.5rem)] font-semibold tracking-tight">{title}</p> : null}
       {subtitle ? <p className="mt-2 px-6 text-center text-sm opacity-60">{subtitle}</p> : null}
-      <p className="absolute bottom-6 text-xs opacity-40">Toca o pulsa una tecla para saltar</p>
+      <p className="absolute bottom-6 text-xs opacity-40">Tap or press any key to skip</p>
     </div>
   );
 }

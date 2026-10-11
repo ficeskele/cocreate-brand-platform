@@ -27,18 +27,18 @@ export default function Landing() {
     <div className="landing">
       {intro ? <AsciiLoader src={`${import.meta.env.BASE_URL}creation-of-adam-hands.jpg`} renderMode="dither" cellSize={9} contrast={158} density={20} coverage={100} bgMode="none"
         animated animation="pulse" animSpeed={100} animIntensity={60} ink="#171717" paper="#F7F7F4" duration={1900}
-        title="Creamos juntos. Ganamos todos." subtitle="Cada idea mejora cuando alguien más la toca." onDone={endIntro} /> : null}
+        title="We create together. Everyone wins." subtitle="Every idea gets better when someone else touches it." onDone={endIntro} /> : null}
       <header className="landing-head">
-        <p className="tiny muted">DropLab · Interés de la comunidad</p>
-        <h1>Lo que la comunidad quiere que exista</h1>
-        <p className="lede">Gira la rueda para ver los productos más apoyados. Votar indica interés, no una compra. <Demo>Votos Demo</Demo></p>
+        <p className="tiny muted">DropLab · Community interest</p>
+        <h1>What the community wants to exist</h1>
+        <p className="lede">Turn the wheel to see the most-supported products. Voting signals interest, not a purchase. <Demo>Demo votes</Demo></p>
       </header>
       <div className="landing-wheel">
-        <WorksWheel items={items} label="Más apoyados" action="Ver idea" />
+        <WorksWheel items={items} label="Most supported" action="View idea" />
       </div>
       <footer className="landing-foot">
-        <p className="small muted">Desplaza, arrastra o usa ↑ ↓. Ordenado por votos netos (Demo). Imágenes: renders conceptuales.</p>
-        <Link to="/explorar" className="btn btn-primary">Explorar ideas</Link>
+        <p className="small muted">Scroll, drag or use ↑ ↓. Sorted by net votes (Demo). Images: concept renders.</p>
+        <Link to="/explore" className="btn btn-primary">Explore ideas</Link>
       </footer>
     </div>
   );

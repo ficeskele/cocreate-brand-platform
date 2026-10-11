@@ -1,6 +1,6 @@
 # DropLab web (`/app`)
 
-React + TypeScript + Vite frontend for DropLab, the inverted marketplace for physical product ideas. It is served by the Hono backend at `/app/*`; the existing `/` page is untouched. UI copy is Spanish.
+React + TypeScript + Vite frontend for DropLab, the inverted marketplace for physical product ideas. It is served by the Hono backend at `/app/*`; the existing `/` page is untouched. UI copy is English.
 
 ## Run
 ```bash
@@ -12,10 +12,10 @@ PORT=3456 AGENT_MOCK_DESIGN=1 pnpm start  # or scripts/serve.sh --mock
 ```
 Without the backend running, the app still works with Demo data only.
 
-Routes: `/app/` is the landing (WorksWheel of the most-voted ideas, Demo votes), `/app/explorar` is the feed, ideas/versions keep their shareable URLs (`/app/i/:slug`, `/app/i/:slug/v/:version`). Wheel check: `node web/scripts/wheel.mjs`.
+Routes: `/app/` is the landing (WorksWheel of the most-voted ideas, Demo votes), `/app/explore` is the feed (`/app/explorar` redirects), ideas/versions keep their shareable URLs (`/app/i/:slug`, `/app/i/:slug/v/:version`). Wheel check: `node web/scripts/wheel.mjs`.
 
 ## Real vs Demo
-Real (`src/data/api.ts`, tagged **Backend** in the UI): brands/products → ideas, non-main branches → versions, `GET/POST /products/:id/messages` (+ `@agent:concept` with `/agent-runs/:id` polling), `/products/:id/coauthors`, open proposals + `/proposals/:id` diff + `/merge`, `/products/:id/releases` + `/releases/:id/open-store`, `X-User-Id` (alice/bob switch in Perfil).
+Real (`src/data/api.ts`, tagged **Backend** in the UI): brands/products → ideas, non-main branches → versions, `GET/POST /products/:id/messages` (+ `@agent:concept` with `/agent-runs/:id` polling), `/products/:id/coauthors`, open proposals + `/proposals/:id` diff + `/merge`, `/products/:id/releases` + `/releases/:id/open-store`, `X-User-Id` (alice/bob switch in Profile).
 
 Demo (`src/data/mock.ts`, tagged **Demo**): sample ideas and renders, votes, follows, purchase interest and aggregates, private minimum royalties, the illustrative $35 retail / $5 total royalty pool proposal, image-rights approvals, notifications, Shopify preview/draft, referral commissions, image pins on comments.
 

@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppProvider } from './state/AppState';
 import { Layout } from './components/Layout';
 import Feed from './pages/Feed';
@@ -14,7 +14,8 @@ export default function App() {
   return (
     <AppProvider><BrowserRouter basename="/app"><Routes><Route element={<Layout />}>
       <Route index element={<Landing />} />
-      <Route path="explorar" element={<Feed />} />
+      <Route path="explore" element={<Feed />} />
+      <Route path="explorar" element={<Navigate to="/explore" replace />} />
       <Route path="estado/cargando" element={<Feed state="loading" />} />
       <Route path="estado/error" element={<Feed state="error" />} />
       <Route path="buscar" element={<Search />} />
@@ -35,7 +36,7 @@ export default function App() {
       <Route path="m/draft/:id" element={<DraftCreado />} />
       <Route path="m/seleccionados" element={<Seleccionados />} />
       <Route path="m/tienda" element={<Tienda />} />
-      <Route path="*" element={<div className="page"><Empty icon="alert" title="Página no encontrada" /></div>} />
+      <Route path="*" element={<div className="page"><Empty icon="alert" title="Page not found" /></div>} />
     </Route></Routes></BrowserRouter></AppProvider>
   );
 }
