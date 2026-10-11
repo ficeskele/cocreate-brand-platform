@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>共創品牌平台</title>
+<title>Co-Create Brand Platform</title>
 <style>
   :root {
     --bg: #f4f1ea; --panel: #fffdf8; --ink: #2b2f2c; --muted: #6f756f; --line: #e3ded2;
@@ -31,6 +31,12 @@
   .user-switch button { border: none; background: transparent; padding: 5px 12px; border-radius: 99px; }
   .user-switch button.on { background: var(--sage-deep); color: #fff; }
 
+  .steps { display: flex; gap: 0; border-bottom: 1px solid var(--line); background: #faf8f2; padding: 0 24px; overflow-x: auto; }
+  .step { font-size: 13px; color: var(--muted); padding: 9px 14px 9px 0; margin-right: 14px; white-space: nowrap; border-bottom: 2px solid transparent; }
+  .step b { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--line); color: var(--ink); font-size: 11px; margin-right: 4px; }
+  .step.now { color: var(--sage-deep); border-bottom-color: var(--sage-deep); font-weight: 600; }
+  .step.now b { background: var(--sage-deep); color: #fff; }
+  .step.done b { background: var(--sage); color: #fff; }
   .layout { display: grid; grid-template-columns: 280px 1fr; min-height: calc(100% - 57px); }
   aside { border-right: 1px solid var(--line); padding: 20px 16px; background: var(--panel); }
   main { padding: 24px 28px 80px; max-width: 1180px; }
@@ -102,55 +108,63 @@
 </head>
 <body>
 <header>
-  <h1>共創品牌平台</h1>
+  <h1>Co-Create Brand Platform</h1>
   <span class="tag">built on arcade.ai</span>
   <div class="spacer"></div>
-  <span class="muted" style="font-size:13px">目前身分</span>
+  <span class="muted" style="font-size:13px">Signed in as</span>
   <div class="user-switch" id="userSwitch">
     <button data-u="u_alice" class="on">alice</button>
     <button data-u="u_bob">bob</button>
   </div>
 </header>
 
+<div class="steps" id="steps">
+  <div class="step" data-step="1"><b>1</b> Create a brand</div>
+  <div class="step" data-step="2"><b>2</b> Create a product</div>
+  <div class="step" data-step="3"><b>3</b> Type <code>@agent:concept your instruction</code> in the thread</div>
+  <div class="step" data-step="4"><b>4</b> Wait for the agent to generate on arcade.ai (about 1 to 2 minutes)</div>
+  <div class="step" data-step="5"><b>5</b> Review the Proposal and click Merge</div>
+  <div class="step" data-step="6"><b>6</b> Create a Release and open the store</div>
+</div>
 <div class="layout">
   <aside>
-    <h2>品牌</h2>
+    <h2>Brands</h2>
     <div id="brandList"></div>
-    <button id="newBrandBtn" style="width:100%;margin-top:6px">＋ 新品牌</button>
+    <button id="newBrandBtn" style="width:100%;margin-top:6px">+ New brand</button>
     <div id="productSection" style="margin-top:22px;display:none">
-      <h2>商品</h2>
+      <h2>Products</h2>
       <div id="productList"></div>
-      <button id="newProductBtn" style="width:100%;margin-top:6px">＋ 新商品</button>
+      <button id="newProductBtn" style="width:100%;margin-top:6px">+ New product</button>
     </div>
   </aside>
 
   <main id="main">
-    <div class="empty">先建一個品牌和商品，或在左邊選一個。</div>
+    <div class="empty">Step 1: click "+ New brand" on the left. The form is prefilled with an example, so just click Create.</div>
   </main>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <dialog id="brandDlg">
-  <h3>新品牌</h3>
-  <label>名稱</label><input id="bName" value="山嵐 Mist" />
+  <h3>New brand</h3>
+  <label>Name</label><input id="bName" value="Mist" />
   <label>slug</label><input id="bSlug" value="mist" />
-  <label>mission</label><input id="bMission" value="把東方山水的靜謐帶進日常生活" />
-  <label>voice</label><input id="bVoice" value="淡雅、含蓄、帶一點詩意" />
-  <label>palette（逗號分隔 hex）</label><input id="bPalette" value="#7A8B7F, #E9E4D8, #B9A58C" />
-  <div class="row" style="justify-content:flex-end;margin-top:16px"><button onclick="brandDlg.close()">取消</button><button class="primary" id="bSave">建立</button></div>
+  <label>mission</label><input id="bMission" value="Bring the stillness of East Asian landscapes into everyday life" />
+  <label>voice</label><input id="bVoice" value="Understated, quiet, with a touch of poetry" />
+  <label>palette (comma-separated hex)</label><input id="bPalette" value="#7A8B7F, #E9E4D8, #B9A58C" />
+  <div class="row" style="justify-content:flex-end;margin-top:16px"><button onclick="brandDlg.close()">Cancel</button><button class="primary" id="bSave">Create</button></div>
 </dialog>
 
 <dialog id="productDlg">
-  <h3>新商品</h3>
-  <label>名稱</label><input id="pName" value="茶園抱枕" />
-  <label>tagline</label><input id="pTagline" value="把山裡的清晨帶回家" />
-  <label>concept</label><textarea id="pConcept">以台灣高山茶園的晨霧為題的抱枕，適合客廳與臥室。</textarea>
+  <h3>New product</h3>
+  <label>Name</label><input id="pName" value="Tea Garden Pillow" />
+  <label>tagline</label><input id="pTagline" value="Bring the mountain morning home" />
+  <label>concept</label><textarea id="pConcept">A throw pillow themed on the morning mist over Taiwanese high-mountain tea gardens, for living rooms and bedrooms.</textarea>
   <label>category</label><input id="pCategory" value="home-textile" />
-  <label>target audience</label><input id="pAudience" value="喜歡東方美學、30 到 45 歲的都市上班族" />
-  <label>features（每行一個）</label><textarea id="pFeatures">雙面印花
-隱形拉鍊</textarea>
-  <div class="row" style="justify-content:flex-end;margin-top:16px"><button onclick="productDlg.close()">取消</button><button class="primary" id="pSave">建立</button></div>
+  <label>target audience</label><input id="pAudience" value="Urban professionals aged 30 to 45 who love East Asian aesthetics" />
+  <label>features (one per line)</label><textarea id="pFeatures">Double-sided print
+Hidden zipper</textarea>
+  <div class="row" style="justify-content:flex-end;margin-top:16px"><button onclick="productDlg.close()">Cancel</button><button class="primary" id="pSave">Create</button></div>
 </dialog>
 
 <script>
@@ -172,24 +186,24 @@ function avatar(type, id) { const n = who(type, id); return `<div class="avatar 
 // ---- user switch ----
 $("#userSwitch").addEventListener("click", (e) => {
   const b = e.target.closest("button"); if (!b) return;
-  state.user = b.dataset.u; [...$("#userSwitch").children].forEach((x) => x.classList.toggle("on", x === b)); toast(`現在是 ${who("user", state.user)}`);
+  state.user = b.dataset.u; [...$("#userSwitch").children].forEach((x) => x.classList.toggle("on", x === b)); toast(`Now acting as ${who("user", state.user)}`); if (state.product) renderMain();
 });
 
 // ---- brands ----
 async function loadBrands() { state.brands = await api("GET", "/brands"); renderSidebar(); }
 function renderSidebar() {
-  $("#brandList").innerHTML = state.brands.map((b) => `<button class="brand-item ${b.id === state.brandId ? "on" : ""}" data-id="${b.id}"><strong>${esc(b.name)}</strong><div class="muted" style="font-size:12px">${esc(b.identity.voice)}</div></button>`).join("") || `<div class="muted" style="font-size:13px;padding:6px 4px">還沒有品牌</div>`;
+  $("#brandList").innerHTML = state.brands.map((b) => `<button class="brand-item ${b.id === state.brandId ? "on" : ""}" data-id="${b.id}"><strong>${esc(b.name)}</strong><div class="muted" style="font-size:12px">${esc(b.identity.voice)}</div></button>`).join("") || `<div class="muted" style="font-size:13px;padding:6px 4px">No brands yet</div>`;
   const brand = state.brands.find((b) => b.id === state.brandId);
   $("#productSection").style.display = brand ? "" : "none";
-  if (brand) $("#productList").innerHTML = brand.products.map((p) => `<button class="product-item ${p.id === state.productId ? "on" : ""}" data-id="${p.id}">${esc(p.name)}</button>`).join("") || `<div class="muted" style="font-size:13px;padding:6px 4px">還沒有商品</div>`;
+  if (brand) $("#productList").innerHTML = brand.products.map((p) => `<button class="product-item ${p.id === state.productId ? "on" : ""}" data-id="${p.id}">${esc(p.name)}</button>`).join("") || `<div class="muted" style="font-size:13px;padding:6px 4px">No products yet</div>`;
 }
-$("#brandList").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { state.brandId = b.dataset.id; state.productId = null; renderSidebar(); $("#main").innerHTML = `<div class="empty">選一個商品，或建新商品。</div>`; } });
+$("#brandList").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { state.brandId = b.dataset.id; state.productId = null; renderSidebar(); $("#main").innerHTML = `<div class="empty">Step 2: click "+ New product" on the left, or pick an existing product.</div>`; setStep(2); } });
 $("#productList").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) openProduct(b.dataset.id); });
 $("#newBrandBtn").onclick = () => brandDlg.showModal();
 $("#bSave").onclick = async () => {
   try {
     const b = await api("POST", "/brands", { name: $("#bName").value, slug: $("#bSlug").value + "-" + Date.now().toString(36), identity: { mission: $("#bMission").value, voice: $("#bVoice").value, palette: $("#bPalette").value.split(",").map((s) => s.trim()).filter(Boolean) } });
-    brandDlg.close(); state.brandId = b.id; await loadBrands(); toast("品牌建立完成");
+    brandDlg.close(); state.brandId = b.id; await loadBrands(); toast("Brand created");
   } catch (e) { toast(e.message); }
 };
 $("#newProductBtn").onclick = () => productDlg.showModal();
@@ -198,11 +212,11 @@ $("#pSave").onclick = async () => {
   const spec = {
     name: $("#pName").value, tagline: $("#pTagline").value, concept: $("#pConcept").value, category: $("#pCategory").value, target_audience: $("#pAudience").value,
     features: $("#pFeatures").value.split("\n").map((s) => s.trim()).filter(Boolean).map((text, i) => ({ id: `f${i + 1}`, text })),
-    materials: [{ id: "m1", name: "棉" }],
-    colorways: brand.identity.palette.slice(0, 1).map((hex, i) => ({ id: `c${i + 1}`, name: "品牌主色", hex })),
+    materials: [{ id: "m1", name: "Cotton" }],
+    colorways: brand.identity.palette.slice(0, 1).map((hex, i) => ({ id: `c${i + 1}`, name: "Brand primary", hex })),
     price_target: { currency: "USD", min: null, max: null }, images: [], sourcing_notes: "",
   };
-  try { const p = await api("POST", `/brands/${state.brandId}/products`, { name: $("#pName").value, spec }); productDlg.close(); await loadBrands(); openProduct(p.id); toast("商品建立完成"); } catch (e) { toast(e.message); }
+  try { const p = await api("POST", `/brands/${state.brandId}/products`, { name: $("#pName").value, spec }); productDlg.close(); await loadBrands(); openProduct(p.id); toast("Product created"); } catch (e) { toast(e.message); }
 };
 
 // ---- product view ----
@@ -218,7 +232,8 @@ async function refresh() {
   for (const p of state.product.open_proposals) if (!state.proposals[p.id]) state.proposals[p.id] = await api("GET", `/proposals/${p.id}`);
   const lastRunId = [...state.product.messages].reverse().find((m) => m.agent_run_id && m.author_type === "user")?.agent_run_id;
   if (lastRunId && (!state.run || state.run.id !== lastRunId || state.run.status === "running")) state.run = await api("GET", `/agent-runs/${lastRunId}`);
-  renderMain();
+  const snapshot = JSON.stringify([state.product, state.coauthors, state.revisions, state.proposals, state.run, state.release, state.store, state.user]);
+  if (snapshot !== state.snapshot) { state.snapshot = snapshot; renderMain(); }
 }
 function startPolling() { clearInterval(state.timer); state.timer = setInterval(() => refresh().catch(console.error), 2000); }
 
@@ -229,89 +244,99 @@ function specCard(spec, brand) {
   return `
     <div class="spec-head">
       <div class="images">
-        ${hero ? `<img class="hero" src="${esc(hero.url)}" alt="hero" />` : `<div class="ph hero" style="grid-row:1/3">還沒有圖。@agent:concept 之後由 arcade.ai 生成</div>`}
-        ${pattern ? `<img src="${esc(pattern.url)}" alt="pattern" />` : `<div class="ph">圖樣</div>`}
-        ${closeup ? `<img src="${esc(closeup.url)}" alt="closeup" />` : `<div class="ph">特寫</div>`}
+        ${hero ? `<img class="hero" src="${esc(hero.url)}" alt="hero" />` : `<div class="ph hero" style="grid-row:1/3">No images yet. arcade.ai generates them after @agent:concept</div>`}
+        ${pattern ? `<img src="${esc(pattern.url)}" alt="pattern" />` : `<div class="ph">Pattern</div>`}
+        ${closeup ? `<img src="${esc(closeup.url)}" alt="closeup" />` : `<div class="ph">Closeup</div>`}
       </div>
       <div>
         <h3>${esc(spec.name)}</h3>
         <div class="tagline">${esc(spec.tagline)}</div>
         <div>${esc(spec.concept)}</div>
         <dl class="kv">
-          <dt>品類</dt><dd>${esc(spec.category)}${a.categoryName ? ` · <span class="muted">arcade.ai ${esc(a.categoryName)}</span>` : ""}</dd>
-          <dt>受眾</dt><dd>${esc(spec.target_audience)}</dd>
-          <dt>特色</dt><dd>${spec.features.map((f) => esc(f.text)).join("、")}</dd>
-          <dt>材質</dt><dd>${spec.materials.map((m) => esc(m.name)).join("、")}${a.selections?.fabric ? ` <span class="muted">(${esc(Object.values(a.selections).join(" · "))})</span>` : ""}</dd>
-          <dt>色彩</dt><dd>${spec.colorways.map((c) => `<span class="swatch" style="background:${esc(c.hex)}"></span>${esc(c.name)}`).join("　")}</dd>
-          <dt>風格</dt><dd>${a.modelId ? `arcade.ai <code>${esc(a.modelId)}</code>` : `<span class="muted">尚未生成</span>`}</dd>
-          <dt>製作者</dt><dd>${a.maker ? esc(a.maker.name) + " <span class='muted'>via arcade.ai</span>" : `<span class="muted">尚未指定</span>`}</dd>
-          <dt>單價</dt><dd>${a.unitPrice ? `<span class="price">${esc(a.unitPrice.currency)} ${esc(a.unitPrice.amount)}</span>` : `<span class="muted">尚未報價</span>`}</dd>
+          <dt>Category</dt><dd>${esc(spec.category)}${a.categoryName ? ` · <span class="muted">arcade.ai ${esc(a.categoryName)}</span>` : ""}</dd>
+          <dt>Audience</dt><dd>${esc(spec.target_audience)}</dd>
+          <dt>Features</dt><dd>${spec.features.map((f) => esc(f.text)).join(", ")}</dd>
+          <dt>Materials</dt><dd>${spec.materials.map((m) => esc(m.name)).join(", ")}${a.selections?.fabric ? ` <span class="muted">(${esc(Object.values(a.selections).join(" · "))})</span>` : ""}</dd>
+          <dt>Colors</dt><dd>${spec.colorways.map((c) => `<span class="swatch" style="background:${esc(c.hex)}"></span>${esc(c.name)}`).join(" ")}</dd>
+          <dt>Style</dt><dd>${a.modelId ? `arcade.ai <code>${esc(a.modelId)}</code>` : `<span class="muted">Not generated yet</span>`}</dd>
+          <dt>Maker</dt><dd>${a.maker ? esc(a.maker.name) + " <span class='muted'>via arcade.ai</span>" : `<span class="muted">Not assigned yet</span>`}</dd>
+          <dt>Unit price</dt><dd>${a.unitPrice ? `<span class="price">${esc(a.unitPrice.currency)} ${esc(a.unitPrice.amount)}</span>` : `<span class="muted">No quote yet</span>`}</dd>
         </dl>
       </div>
     </div>`;
 }
 
+function setStep(n) {
+  document.querySelectorAll("#steps .step").forEach((el) => { const k = Number(el.dataset.step); el.classList.toggle("now", k === n); el.classList.toggle("done", k < n); });
+}
 function renderMain() {
+  // keep the draft message and cursor across re-renders
+  const draftEl = $("#msgInput");
+  const draft = draftEl ? { value: draftEl.value, focused: document.activeElement === draftEl, start: draftEl.selectionStart, end: draftEl.selectionEnd } : null;
   const p = state.product; const brand = state.brands.find((b) => b.id === p.brand_id);
   const spec = p.main_head?.content;
   const run = state.run;
   const stages = ["designing", "generating", "building", "done"];
-  const stageLabel = { designing: "Claude 設計中", generating: "arcade.ai 生成圖樣", building: "arcade.ai 製作商品", done: "完成" };
+  const stageLabel = { designing: "Claude is designing", generating: "arcade.ai is generating the pattern", building: "arcade.ai is building the product", done: "Done" };
   const stageHtml = run ? `
     <div class="stages">${stages.map((s) => { const i = stages.indexOf(run.stage); const j = stages.indexOf(s); const cls = run.status === "failed" && j === i ? "fail" : run.status === "succeeded" || j < i ? "done" : j === i ? "on" : ""; return `<div class="stage ${cls}">${stageLabel[s]}</div>`; }).join("")}</div>
     ${run.status === "failed" ? `<div style="color:var(--err);font-size:13px">${esc(run.error)}</div>` : ""}
-    ${run.tool_calls?.length ? `<details class="tools"><summary>工具呼叫 ${run.tool_calls.length} 次</summary>${run.tool_calls.map((t) => `<div class="tool-call"><code>${esc(t.tool)}</code> <span class="muted">${esc(JSON.stringify(t.input)).slice(0, 160)}</span></div>`).join("")}</details>` : ""}` : "";
+    ${run.tool_calls?.length ? `<details class="tools"><summary>${run.tool_calls.length} tool calls</summary>${run.tool_calls.map((t) => `<div class="tool-call"><code>${esc(t.tool)}</code> <span class="muted">${esc(JSON.stringify(t.input)).slice(0, 160)}</span></div>`).join("")}</details>` : ""}` : "";
 
   const proposals = p.open_proposals.map((pr) => renderProposal(state.proposals[pr.id] ?? pr)).join("");
 
   $("#main").innerHTML = `
     <div class="row" style="justify-content:space-between;margin-bottom:12px">
       <div><span class="muted">${esc(brand?.name ?? "")}</span> <span class="muted">／</span> <strong style="font-size:20px">${esc(p.name)}</strong> <span class="muted" style="font-size:13px">main @ ${esc(p.main_head?.id ?? "")}</span></div>
-      <div class="chips">${(state.coauthors ?? []).map((c) => `<span class="chip ${c.type}">${esc(c.handle)} ×${c.revisions}${c.on_behalf_of ? ` <span class="muted">代表 ${esc(c.on_behalf_of.replace(/^u_/, ""))}</span>` : ""}</span>`).join("")}</div>
+      <div class="chips">${(state.coauthors ?? []).map((c) => `<span class="chip ${c.type}">${esc(c.handle)} ×${c.revisions}${c.on_behalf_of ? ` <span class="muted">on behalf of ${esc(c.on_behalf_of.replace(/^u_/, ""))}</span>` : ""}</span>`).join("")}</div>
     </div>
 
-    <div class="card">${spec ? specCard(spec, brand) : `<div class="muted">main 沒有內容</div>`}</div>
+    <div class="card">${spec ? specCard(spec, brand) : `<div class="muted">main is empty</div>`}</div>
 
     <div class="grid2">
       <div class="card">
-        <h2>討論串</h2>
+        <h2>Discussion</h2>
         <div class="thread" id="thread">
-          ${p.messages.length ? p.messages.map((m) => `<div class="msg">${avatar(m.author_type, m.author_id)}<div><div class="who">${esc(who(m.author_type, m.author_id))} · ${esc(hhmm(m.created_at))}</div><div class="bubble">${esc(m.body).replace(/@agent:concept/g, '<span class="mention">@agent:concept</span>')}</div></div></div>`).join("") : `<div class="muted">還沒有討論。輸入 <span class="mention">@agent:concept 做成春季限定版，加梅花，用 20x20 亞麻</span> 試試。</div>`}
+          ${p.messages.length ? p.messages.map((m) => `<div class="msg">${avatar(m.author_type, m.author_id)}<div><div class="who">${esc(who(m.author_type, m.author_id))} · ${esc(hhmm(m.created_at))}</div><div class="bubble">${esc(m.body).replace(/@agent:concept/g, '<span class="mention">@agent:concept</span>')}</div></div></div>`).join("") : `<div class="muted">No messages yet. Try <span class="mention">@agent:concept make a spring edition: add plum blossoms, use 20x20 linen</span>.</div>`}
         </div>
         ${stageHtml}
-        <div class="row" style="margin-top:12px">
-          <input id="msgInput" placeholder="@agent:concept 做成春季限定版，加梅花，用 20x20 亞麻" style="flex:1" />
-          <button class="primary" id="sendBtn" ${run?.status === "running" ? "disabled" : ""}>送出</button>
+        <div style="margin-top:12px;font-size:13px" class="muted">Type here. To have the agent design, start with <span class="mention">@agent:concept</span> followed by your instruction. <button id="exampleBtn" style="padding:2px 8px;font-size:12px;margin-left:6px">Fill in example</button></div>
+        <div class="row" style="margin-top:6px">
+          <input id="msgInput" placeholder="e.g. @agent:concept make a spring edition: add plum blossoms, use 20x20 linen" style="flex:1" ${run?.status === "running" ? "disabled" : ""} />
+          <button class="primary" id="sendBtn" ${run?.status === "running" ? "disabled" : ""}>${run?.status === "running" ? "agent working…" : "Send"}</button>
         </div>
       </div>
 
       <div>
         <div class="card">
           <h2>Proposals</h2>
-          ${proposals || `<div class="muted">沒有待審的 proposal。</div>`}
+          ${proposals || `<div class="muted">No open proposals.</div>`}
         </div>
         <div class="card">
-          <h2>Release 與開店</h2>
+          <h2>Release and store</h2>
           <div class="row">
-            <button id="releaseBtn" ${spec?.arcade?.productId ? "" : "disabled title='main 還沒有 arcade.ai 商品'"}>打 Release</button>
-            <button class="primary" id="storeBtn" ${state.release ? "" : "disabled"}>開店（arcade.ai）</button>
+            <button id="releaseBtn" ${spec?.arcade?.productId ? "" : "disabled title='main has no arcade.ai product yet'"}>Create Release</button>
+            <button class="primary" id="storeBtn" ${state.release ? "" : "disabled"}>Open store (arcade.ai)</button>
           </div>
-          ${state.release ? `<div class="release-box" style="margin-top:12px"><strong>${esc(state.release.version)}</strong> · ${esc(state.release.export_payload.title)} · ${state.release.export_payload.images.length} 張圖 · credits: ${state.release.export_payload.credits.map((c) => esc(c.handle)).join("、")}<details style="margin-top:6px"><summary class="muted" style="cursor:pointer;font-size:13px">export_payload</summary><pre class="mono" style="white-space:pre-wrap;font-size:12px">${esc(JSON.stringify(state.release.export_payload, null, 2))}</pre></details></div>` : ""}
-          ${state.store ? `<div class="release-box" style="margin-top:12px"><div><strong>${esc(state.store.product.title)}</strong> · ${esc(state.store.product.selectionLabel)} · 製作者 ${esc(state.store.product.maker.name)} · <span class="price" style="font-size:18px">${esc(state.store.product.unitPrice.currency)} ${esc(state.store.product.unitPrice.amount)}</span></div><a class="checkout" href="${esc(state.store.checkout_url)}" target="_blank" rel="noopener">在 arcade.ai 結帳 ↗</a><div class="muted" style="font-size:12px;margin-top:6px">付款即真實下單，由工匠製作出貨。</div></div>` : ""}
+          ${state.release ? `<div class="release-box" style="margin-top:12px"><strong>${esc(state.release.version)}</strong> · ${esc(state.release.export_payload.title)} · ${state.release.export_payload.images.length} images · credits: ${state.release.export_payload.credits.map((c) => esc(c.handle)).join(", ")}<details style="margin-top:6px"><summary class="muted" style="cursor:pointer;font-size:13px">export_payload</summary><pre class="mono" style="white-space:pre-wrap;font-size:12px">${esc(JSON.stringify(state.release.export_payload, null, 2))}</pre></details></div>` : ""}
+          ${state.store ? `<div class="release-box" style="margin-top:12px"><div><strong>${esc(state.store.product.title)}</strong> · ${esc(state.store.product.selectionLabel)} · made by ${esc(state.store.product.maker.name)} · <span class="price" style="font-size:18px">${esc(state.store.product.unitPrice.currency)} ${esc(state.store.product.unitPrice.amount)}</span></div><a class="checkout" href="${esc(state.store.checkout_url)}" target="_blank" rel="noopener">Check out on arcade.ai ↗</a><div class="muted" style="font-size:12px;margin-top:6px">Paying places a real order. An artisan makes and ships it.</div></div>` : ""}
         </div>
         <div class="card">
-          <h2>main 歷史</h2>
-          <ul class="hist" style="margin:0;padding-left:18px">${(state.revisions ?? []).map((r) => `<li><code>${esc(r.id)}</code> ${esc(r.summary)} <span class="muted">— ${esc(who(r.author_type, r.author_id))}${r.on_behalf_of_user_id ? `（代表 ${esc(r.on_behalf_of_user_id.replace(/^u_/, ""))}）` : ""}</span></li>`).join("")}</ul>
+          <h2>main history</h2>
+          <ul class="hist" style="margin:0;padding-left:18px">${(state.revisions ?? []).map((r) => `<li><code>${esc(r.id)}</code> ${esc(r.summary)} <span class="muted">— ${esc(who(r.author_type, r.author_id))}${r.on_behalf_of_user_id ? ` (on behalf of ${esc(r.on_behalf_of_user_id.replace(/^u_/, ""))})` : ""}</span></li>`).join("")}</ul>
         </div>
       </div>
     </div>`;
 
+  setStep(state.store ? 6 : state.release ? 6 : p.open_proposals.length ? 5 : run?.status === "running" ? 4 : spec?.arcade?.productId ? 6 : 3);
+  $("#exampleBtn").onclick = () => { const el = $("#msgInput"); el.value = "@agent:concept make a spring edition: add plum blossoms, use 20x20 linen"; el.focus(); };
   $("#sendBtn").onclick = sendMessage;
   $("#msgInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendMessage(); });
-  $("#releaseBtn").onclick = async () => { try { state.release = await api("POST", `/products/${p.id}/releases`); state.store = null; renderMain(); toast(`Release ${state.release.version} 建立`); } catch (e) { toast(e.message); } };
-  $("#storeBtn").onclick = async () => { const b = $("#storeBtn"); b.disabled = true; b.textContent = "arcade.ai 建立結帳中…"; try { state.store = await api("POST", `/releases/${state.release.id}/open-store`); renderMain(); toast("已在 arcade.ai 開店"); } catch (e) { toast(e.message); renderMain(); } };
-  document.querySelectorAll("[data-merge]").forEach((b) => b.onclick = async () => { b.disabled = true; try { const r = await api("POST", `/proposals/${b.dataset.merge}/merge`); delete state.proposals[b.dataset.merge]; await refresh(); toast(`已 merge，co-authors：${r.coauthors.map((c) => c.handle).join("、")}`); } catch (e) { toast(e.message); b.disabled = false; } });
+  $("#releaseBtn").onclick = async () => { try { state.release = await api("POST", `/products/${p.id}/releases`); state.store = null; renderMain(); toast(`Release ${state.release.version} created`); } catch (e) { toast(e.message); } };
+  $("#storeBtn").onclick = async () => { const b = $("#storeBtn"); b.disabled = true; b.textContent = "Creating arcade.ai checkout…"; try { state.store = await api("POST", `/releases/${state.release.id}/open-store`); renderMain(); toast("Store opened on arcade.ai"); } catch (e) { toast(e.message); renderMain(); } };
+  document.querySelectorAll("[data-merge]").forEach((b) => b.onclick = async () => { b.disabled = true; try { const r = await api("POST", `/proposals/${b.dataset.merge}/merge`); delete state.proposals[b.dataset.merge]; await refresh(); toast(`Merged. Co-authors: ${r.coauthors.map((c) => c.handle).join(", ")}`); } catch (e) { toast(e.message); b.disabled = false; } });
   const th = $("#thread"); th.scrollTop = th.scrollHeight;
+  if (draft) { const el = $("#msgInput"); el.value = draft.value; if (draft.focused) { el.focus(); try { el.setSelectionRange(draft.start, draft.end); } catch {} } }
 }
 
 function renderProposal(pr) {
@@ -321,15 +346,15 @@ function renderProposal(pr) {
   const img = (s, role) => s?.images?.find((i) => i.role === role)?.url;
   return `<div class="card proposal">
     <div class="row" style="justify-content:space-between">
-      <div><strong>${esc(who(pr.opened_by_type, pr.opened_by_id))}</strong> 提出 <span class="muted" style="font-size:13px">${esc(pr.created_at ? hhmm(pr.created_at) : "")}</span></div>
-      <button class="primary" data-merge="${pr.id}">Merge 到 main（以 ${who("user", state.user)} 身分）</button>
+      <div><strong>${esc(who(pr.opened_by_type, pr.opened_by_id))}</strong> proposed <span class="muted" style="font-size:13px">${esc(pr.created_at ? hhmm(pr.created_at) : "")}</span></div>
+      <button class="primary" data-merge="${pr.id}">Merge into main (as ${who("user", state.user)})</button>
     </div>
     <p style="margin:8px 0">${esc(pr.summary)}</p>
     ${src ? `<div class="compare">
-      <div class="side"><h4>main 現況</h4>${img(main, "hero") ? `<img src="${esc(img(main, "hero"))}" />` : `<div class="ph" style="min-height:120px;display:grid;place-items:center;color:var(--muted)">沒有圖</div>`}<div style="margin-top:6px"><strong>${esc(main?.name ?? "")}</strong><div class="muted" style="font-size:13px">${esc(main?.tagline ?? "")}</div></div></div>
-      <div class="side"><h4>Proposal</h4>${img(src, "hero") ? `<img src="${esc(img(src, "hero"))}" />` : ""}<div style="margin-top:6px"><strong>${esc(src.name)}</strong><div class="muted" style="font-size:13px">${esc(src.tagline)}</div>${src.arcade?.unitPrice ? `<div style="margin-top:4px">${esc(src.arcade.categoryName ?? "")} · ${esc(Object.values(src.arcade.selections ?? {}).join(" · "))} · <strong>${esc(src.arcade.unitPrice.currency)} ${esc(src.arcade.unitPrice.amount)}</strong> · 製作者 ${esc(src.arcade.maker?.name ?? "")}</div>` : ""}</div></div>
+      <div class="side"><h4>main now</h4>${img(main, "hero") ? `<img src="${esc(img(main, "hero"))}" />` : `<div class="ph" style="min-height:120px;display:grid;place-items:center;color:var(--muted)">No image</div>`}<div style="margin-top:6px"><strong>${esc(main?.name ?? "")}</strong><div class="muted" style="font-size:13px">${esc(main?.tagline ?? "")}</div></div></div>
+      <div class="side"><h4>Proposal</h4>${img(src, "hero") ? `<img src="${esc(img(src, "hero"))}" />` : ""}<div style="margin-top:6px"><strong>${esc(src.name)}</strong><div class="muted" style="font-size:13px">${esc(src.tagline)}</div>${src.arcade?.unitPrice ? `<div style="margin-top:4px">${esc(src.arcade.categoryName ?? "")} · ${esc(Object.values(src.arcade.selections ?? {}).join(" · "))} · <strong>${esc(src.arcade.unitPrice.currency)} ${esc(src.arcade.unitPrice.amount)}</strong> · made by ${esc(src.arcade.maker?.name ?? "")}</div>` : ""}</div></div>
     </div>
-    <table class="diff-table"><thead><tr><th>欄位</th><th></th><th>之前</th><th>之後</th></tr></thead><tbody>${rows || `<tr><td colspan="4" class="muted">沒有文字欄位變更</td></tr>`}</tbody></table>` : ""}
+    <table class="diff-table"><thead><tr><th>Field</th><th></th><th>Before</th><th>After</th></tr></thead><tbody>${rows || `<tr><td colspan="4" class="muted">No text field changes</td></tr>`}</tbody></table>` : ""}
   </div>`;
 }
 function fmt(v) { if (v == null) return ""; if (typeof v === "object") return v.text ?? v.name ?? JSON.stringify(v); return String(v); }
@@ -339,11 +364,12 @@ async function sendMessage() {
   try {
     const r = await api("POST", `/products/${state.productId}/messages`, { body });
     input.value = "";
-    if (r.agent_run_id) { state.run = await api("GET", `/agent-runs/${r.agent_run_id}`); toast("concept agent 開始工作"); }
+    if (r.agent_run_id) { state.run = await api("GET", `/agent-runs/${r.agent_run_id}`); toast("concept agent started"); }
     await refresh();
   } catch (e) { toast(e.message); }
 }
 
+setStep(1);
 loadBrands().then(() => {
   const wanted = new URLSearchParams(location.hash.slice(1)).get("product");
   const hit = wanted && state.brands.find((b) => b.products.some((p) => p.id === wanted));

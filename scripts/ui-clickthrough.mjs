@@ -1,4 +1,4 @@
-// Drive the UI through headless Chrome via CDP: open a product, click Release, click 開店, screenshot.
+// Drive the UI through headless Chrome via CDP: open a product, click Release, click Open store, screenshot.
 // Usage: node scripts/ui-clickthrough.mjs <productId> <out.png>
 import { spawn } from "node:child_process";
 import { writeFileSync } from "node:fs";

@@ -15,7 +15,7 @@ const MODEL = process.env.CLAUDE_MODEL ?? "claude-opus-5-5";
 
 // ---- submit_spec schema: ProductSpec minus server-filled fields, plus what we need to call arcade.ai ----
 const SubmitSpec = z.object({
-  summary: z.string().describe("繁體中文，三句內：改了什麼、選了什麼風格與品類、為什麼"),
+  summary: z.string().describe("English, at most three sentences: what changed, which style and category were chosen, and why"),
   spec: z.object({
     name: z.string(),
     tagline: z.string(),
@@ -73,24 +73,24 @@ const tools: Anthropic.Tool[] = [
 ];
 
 function systemPrompt(brand: { name: string; identity: BrandIdentity }) {
-  return `你是品牌「${brand.name}」共創團隊的產品概念設計師。你的產出會被做成真實的實體商品（由 arcade.ai 生成圖樣並由工匠製作）。
+  return `You are the product concept designer on the co-creation team for the brand "${brand.name}". Your output becomes a real physical product: arcade.ai generates the pattern and an artisan makes it.
 
-品牌 identity：
+Brand identity:
 - mission: ${brand.identity.mission}
 - voice: ${brand.identity.voice}
 - palette: ${brand.identity.palette.join(", ")}
 
-工作方式：
-1. 先呼叫 list_styles 與 list_categories，挑一個風格 modelId 與一個 print 類別。
-2. 呼叫 get_category_options 確認你要的尺寸與材質存在（canManufacture 必須為 true），並把回傳的完整 selections 原樣交付。
-3. 最後只能透過 submit_spec 交付，不要用文字回答。
+How to work:
+1. Call list_styles and list_categories first, then pick one style modelId and one print category.
+2. Call get_category_options to confirm the size and material you want exist (canManufacture must be true), and hand back the returned selections exactly as given.
+3. Deliver only through submit_spec. Do not answer in plain text.
 
-規則：
-- 使用者沒叫你動的欄位原樣保留；陣列元素保留原 id，新增的用新 id（例如 f4、m3、c2）。
-- name、tagline、concept 用繁體中文，依品牌 voice 撰寫。
-- arcade.prompt 用英文，描述畫面內容、構圖、風格與用色，不要寫商品名稱或品牌名。
-- colorways 的 hex 要呼應品牌 palette。
-- summary 繁體中文三句內：改了什麼、選了什麼風格與品類、為什麼。`;
+Rules:
+- Keep every field the user did not ask you to change exactly as is. Keep existing ids on array elements and give new elements new ids (for example f4, m3, c2).
+- Write name, tagline and concept in English, in the brand's voice.
+- Write arcade.prompt in English, describing the scene, composition, style and colors. Do not mention the product name or the brand name.
+- colorways hex values should echo the brand palette.
+- summary: English, at most three sentences: what changed, which style and category you chose, and why.`;
 }
 
 
@@ -110,10 +110,10 @@ async function designWithClaude(ctx: DesignCtx): Promise<SubmitSpec> {
       {
         role: "user",
         content: [
-          `目前的 ProductSpec（main head）：\n${JSON.stringify(ctx.inputSpec, null, 2)}`,
-          `最近的討論：\n${ctx.recent.map((m) => `[${m.author_type}:${m.author_id}] ${m.body}`).join("\n")}`,
-          `使用者的指示：${ctx.instruction}`,
-          "請依照工作方式完成設計並用 submit_spec 交付。",
+          `Current ProductSpec (main head):\n${JSON.stringify(ctx.inputSpec, null, 2)}`,
+          `Recent discussion:\n${ctx.recent.map((m) => `[${m.author_type}:${m.author_id}] ${m.body}`).join("\n")}`,
+          `User instruction: ${ctx.instruction}`,
+          "Follow the working steps, finish the design, and deliver it with submit_spec.",
         ].join("\n\n"),
       },
     ];
@@ -134,7 +134,7 @@ async function designWithClaude(ctx: DesignCtx): Promise<SubmitSpec> {
       const uses = response.content.filter((b): b is Anthropic.ToolUseBlock => b.type === "tool_use");
       if (uses.length === 0) {
         if (response.stop_reason === "end_turn") {
-          messages.push({ role: "user", content: "請用 submit_spec 工具交付，不要用文字回答。" });
+          messages.push({ role: "user", content: "Deliver with the submit_spec tool. Do not answer in plain text." });
           continue;
         }
         throw new Error(`unexpected stop_reason ${response.stop_reason}`);
@@ -184,17 +184,17 @@ async function designWithClaude(ctx: DesignCtx): Promise<SubmitSpec> {
 /** Demo fallback when no Claude credentials are available: a fixed, known-good design. */
 function mockDesign(input: ProductSpec, instruction: string): SubmitSpec {
   return {
-    summary: `依指示「${instruction}」更新：加入春季梅花元素，改用 East Asian 風格生成圖樣，做成 20x20 亞麻抱枕。`,
+    summary: `Updated per the instruction "${instruction}": added spring plum blossoms, switched to an East Asian style for the pattern, and made it a 20x20 linen pillow.`,
     spec: {
-      name: `${input.name}・春季限定`,
-      tagline: "梅花初綻，山嵐未散",
-      concept: `${input.concept} 春季限定版以晨霧中的梅花與梯田茶園為主題。`,
+      name: `${input.name} · Spring Edition`,
+      tagline: "Plum blossoms open while the mist still lingers",
+      concept: `${input.concept} The spring edition features plum blossoms and terraced tea gardens in the morning mist.`,
       category: input.category,
       target_audience: input.target_audience,
-      features: [...input.features, { id: `f${input.features.length + 1}`, text: "春季限定圖樣，限量製作" }],
-      materials: [{ id: "m1", name: "亞麻" }],
-      colorways: [...input.colorways, { id: `c${input.colorways.length + 1}`, name: "梅粉", hex: "#E8C4C4" }],
-      sourcing_notes: "由 arcade.ai 合作工匠製作，單件起訂。",
+      features: [...input.features, { id: `f${input.features.length + 1}`, text: "Spring-edition pattern, limited run" }],
+      materials: [{ id: "m1", name: "Linen" }],
+      colorways: [...input.colorways, { id: `c${input.colorways.length + 1}`, name: "Plum Pink", hex: "#E8C4C4" }],
+      sourcing_notes: "Made to order by an arcade.ai partner artisan, from a single unit.",
     },
     arcade: {
       prompt: "A serene mountain tea garden at dawn with soft mist, terraced tea plants, blooming plum blossoms and small songbirds, elegant East Asian ink and watercolor style, muted sage green and cream palette",
@@ -249,7 +249,7 @@ export async function runConceptAgent(runId: string) {
     const catName = cats.find((c) => c.categoryId === submitted.arcade.categoryId)?.name ?? submitted.arcade.categoryId;
     const styleName = styles.find((m) => m.modelId === submitted.arcade.modelId)?.name ?? submitted.arcade.modelId;
     const selLabel = Object.entries(submitted.arcade.selections).map(([k, v]) => `${k}=${v}`).join(", ");
-    say(`設計完成。我會用「${styleName}」風格在 arcade.ai 生成圖樣，做成 ${catName}（${selLabel}）。生成約需 1 到 2 分鐘。`);
+    say(`Design done. I will generate the pattern on arcade.ai in the "${styleName}" style and make it a ${catName} (${selLabel}). Generation takes about 1 to 2 minutes.`);
 
     // 4. generate on arcade.ai: pattern, then product with the chosen selections
     setRun({ stage: "generating" });
@@ -324,12 +324,12 @@ export async function runConceptAgent(runId: string) {
       "INSERT INTO proposal (id, product_id, source_branch_id, source_revision_id, status, opened_by_type, opened_by_id, summary) VALUES (?,?,?,?,?,?,?,?)",
       proposalId, product.id, branchId, revId, "open", "agent", "concept", submitted.summary,
     );
-    say(`${submitted.summary}\n\narcade.ai 商品：${arcadeProduct.title}（${arcadeProduct.selectionLabel}），製作者 ${arcadeProduct.maker.name}，單價 ${arcadeProduct.unitPrice.currency} ${arcadeProduct.unitPrice.amount}。已開 Proposal ${proposalId}，請審閱後 merge。`);
+    say(`${submitted.summary}\n\narcade.ai product: ${arcadeProduct.title} (${arcadeProduct.selectionLabel}), made by ${arcadeProduct.maker.name}, unit price ${arcadeProduct.unitPrice.currency} ${arcadeProduct.unitPrice.amount}. Opened Proposal ${proposalId}; please review and merge.`);
     setRun({ stage: "done", status: "succeeded", work_branch_id: branchId, output_revision_id: revId, output_proposal_id: proposalId });
   } catch (e) {
     const msg = (e as Error).message;
     console.error(`[agent ${runId}] failed:`, e);
     setRun({ status: "failed", error: msg });
-    say(`抱歉，這次設計失敗了：${msg}`);
+    say(`Sorry, this design run failed: ${msg}`);
   }
 }

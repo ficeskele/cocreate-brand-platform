@@ -1,56 +1,56 @@
-# 共創品牌平台（built on arcade.ai）
+# Co-Create Brand Platform (built on arcade.ai)
 
-Brand → Product（版本化 ProductSpec）→ `@agent:concept` → Claude 設計 + **arcade.ai** 生成圖樣與實體商品 → Proposal → 人 merge → Release → 開店（arcade.ai checkout）。
+Brand → Product (versioned ProductSpec) → `@agent:concept` → Claude designs + **arcade.ai** generates the pattern and the physical product → Proposal → a human merges → Release → open store (arcade.ai checkout).
 
-> 這裡的 Arcade 一律指 **arcade.ai**（AI 實體商品平台），不是 arcade.dev。詳見 `PLAN.md` 開頭的名稱澄清。
+> "Arcade" here always means **arcade.ai** (the AI physical-product platform), not arcade.dev. See the naming note at the top of `PLAN.md`.
 
-## 跑起來
+## Run it
 
 ```bash
 pnpm install
-cp .env.example .env   # 填 ARCADE_API_KEY（arcade.ai）與 ANTHROPIC_API_KEY
-scripts/serve.sh         # 真的用 Claude 設計
-scripts/serve.sh --mock  # 沒有 ANTHROPIC_API_KEY 時的備案：固定設計，arcade.ai 生成照常
-./demo.sh                # 用 curl 跑完整條 demo 路線（約 1 到 2 分鐘，會在 arcade.ai 真的生成）
+cp .env.example .env   # fill in ARCADE_API_KEY (arcade.ai) and ANTHROPIC_API_KEY
+scripts/serve.sh         # Claude does the design for real
+scripts/serve.sh --mock  # fallback without ANTHROPIC_API_KEY: fixed design, arcade.ai generation still runs
+./demo.sh                # run the full demo path with curl (about 1 to 2 minutes, generates on arcade.ai for real)
 ```
 
-伺服器在 `http://localhost:3456`，根路徑就是一頁式介面（左欄品牌與商品，主區商品現況、討論串與 agent 進度、Proposal diff 與 merge、Release 與開店）。右上角切換 alice / bob 身分，API 的 `X-User-Id` 跟著變。`#product=<id>` 可直接開某個商品。
+The server listens on `http://localhost:3456`. The root path serves the one-page UI (left column: brands and products; main area: product state, discussion thread with agent progress, Proposal diff and merge, Release and store). Switch between alice and bob in the top right; the API's `X-User-Id` header follows. `#product=<id>` opens a product directly.
 
-重置資料：`rm data/app.db` 再重啟。
+Reset data: `rm data/app.db` and restart.
 
-## 端點
+## Endpoints
 
-| Method | Path | 做什麼 |
+| Method | Path | What it does |
 |---|---|---|
 | POST | /brands | `{name, slug, identity:{mission, voice, palette[]}}` |
-| GET | /brands | 全部品牌，含 products |
-| GET | /brands/:id | 含 products |
-| POST | /brands/:id/products | `{name, spec}` → product、main、revision #1 |
-| GET | /products/:id | main head spec、branches、open proposals、最近 20 則 messages |
-| POST | /products/:id/messages | `{body}`；含 `@agent:concept` 時回 `agent_run_id` |
+| GET | /brands | all brands, with products |
+| GET | /brands/:id | with products |
+| POST | /brands/:id/products | `{name, spec}` → product, main branch, revision #1 |
+| GET | /products/:id | main head spec, branches, open proposals, last 20 messages |
+| POST | /products/:id/messages | `{body}`; returns `agent_run_id` when the body contains `@agent:concept` |
 | GET | /products/:id/messages | |
-| GET | /agent-runs/:id | `status`、`stage`（designing / generating / building / done）、`tool_calls` |
-| GET | /proposals/:id | source 與 main 兩份 spec + diff |
+| GET | /agent-runs/:id | `status`, `stage` (designing / generating / building / done), `tool_calls` |
+| GET | /proposals/:id | source and main specs + diff |
 | POST | /proposals/:id/merge | |
-| GET | /products/:id/revisions | main 的歷史 |
-| GET | /products/:id/coauthors | 含 merge 進來的 agent revision |
+| GET | /products/:id/revisions | history of main |
+| GET | /products/:id/coauthors | includes merged agent revisions |
 | POST | /products/:id/releases | |
-| GET | /releases/:id | 含 export_payload |
+| GET | /releases/:id | with export_payload |
 | POST | /releases/:id/open-store | arcade.ai `checkouts/create` → `{checkout_url}` |
-| GET | /images/:file | 從 arcade.ai 下載快取的圖（簽名網址會過期） |
+| GET | /images/:file | images downloaded and cached from arcade.ai (its signed URLs expire) |
 | GET | /health | |
 
-## 結構
+## Layout
 
 ```
-src/index.ts    Hono 路由
-src/db.ts       SQLite schema、seed、revision 工具
-src/spec.ts     ProductSpec zod schema、diff
-src/arcade.ts   arcade.ai client（POST JSON、retry、job 輪詢）
-src/images.ts   下載 arcade.ai 圖片到 data/images/
-src/agent.ts    concept agent：designWithClaude → arcade.ai 生成 → branch/revision/proposal
-src/release.ts  coauthors、export_payload、open-store
-public/index.html  一頁式前端（vanilla JS，每 2 秒輪詢）
-demo.sh         完整路線
-scripts/        serve.sh、arcade-smoke.ts、ui-clickthrough.mjs（headless Chrome 點過 Release 與開店）
+src/index.ts    Hono routes
+src/db.ts       SQLite schema, seed, revision helpers
+src/spec.ts     ProductSpec zod schema, diff
+src/arcade.ts   arcade.ai client (POST JSON, retry, job polling)
+src/images.ts   downloads arcade.ai images into data/images/
+src/agent.ts    concept agent: designWithClaude → arcade.ai generation → branch/revision/proposal
+src/release.ts  coauthors, export_payload, open-store
+public/index.html  one-page frontend (vanilla JS, polls every 2 seconds)
+demo.sh         full demo path
+scripts/        serve.sh, arcade-smoke.ts, ui-clickthrough.mjs (headless Chrome clicks through Release and Open store)
 ```
