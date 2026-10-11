@@ -93,15 +93,16 @@ export function predict(input: string): Prediction {
   const clause = input.trim().split(/[,，。.;；!！?？:：]/)[0].trim();
   const stop = /^(a|an|the|some|my|our)\s+/i;
   let name: string;
+  const zhCore = clause.replace(/^(我想要一個|我想要|我要一個|我要|想要|幫我做一個|幫我做|做一個|一個)/, "");
   if (zh) {
-    const short = clause.replace(/^(我想要|我要|想要|做一個|一個|幫我做)/, "").slice(0, 10);
-    name = short.includes(nounZh) ? short : `${short}${nounZh}`;
+    // keep the noun if the user wrote it; otherwise append the predicted one
+    name = zhCore.includes(nounZh) ? zhCore.slice(0, zhCore.indexOf(nounZh) + nounZh.length).slice(-12) : `${zhCore.slice(0, 10)}${nounZh}`;
   } else {
     const words = clause.replace(stop, "").split(/\s+/).filter(Boolean).slice(0, 5);
     const titled = words.map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
     name = new RegExp(nounEn.split(" ")[0], "i").test(titled) ? titled : `${titled} ${nounEn}`;
   }
-  const head = zh ? clause.slice(0, 6) : (clause.replace(stop, "").split(/\s+/)[0] ?? "Studio");
+  const head = zh ? zhCore.replace(/(圖案|的|可愛|超|很)+/g, "").slice(0, 5) || "我的" : (clause.replace(stop, "").split(/\s+/)[0] ?? "Studio");
   const features = [...new Set(top.flatMap((t) => t.seed.features))].slice(0, 4);
   const materials = [...new Set(top.flatMap((t) => t.seed.materials))].slice(0, 2);
   const [lo, hi] = top.length ? [Math.min(...top.map((t) => t.seed.price[0])), Math.max(...top.map((t) => t.seed.price[1]))] : best.price;
