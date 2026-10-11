@@ -51,6 +51,8 @@ const VIBES: Record<Seed["vibe"], { mission: string; voice: string; tagline: str
   classic: { mission: "用經典紋樣做出會留很久的物件", voice: "沉穩、講究、重細節", tagline: "經得起時間的樣子" },
 };
 
+const SINGULAR: Record<string, [string, string]> = { "Decorative Pillows": ["Pillow", "抱枕"], "Outdoor Decorative Pillows": ["Outdoor Pillow", "戶外抱枕"], Scarves: ["Scarf", "圍巾"], "Table Runners": ["Table Runner", "桌旗"], "Drum Lampshades": ["Lampshade", "燈罩"], "Tall Drum Lampshades": ["Lampshade", "燈罩"], Duvets: ["Duvet", "被套"], Napkins: ["Napkin Set", "餐巾"], "Pocket Squares": ["Pocket Square", "口袋巾"], "Tea Towels": ["Tea Towel", "茶巾"], Curtains: ["Curtains", "窗簾"], "Floor Pillows": ["Floor Pillow", "坐墊"], Placemats: ["Placemats", "餐墊"], Quilts: ["Quilt", "拼布被"], "Fabric By The Yard": ["Fabric", "布料"], "Dainty Gemstone Ring": ["Ring", "戒指"], "Pendant Necklace": ["Necklace", "項鍊"], Shams: ["Shams", "枕套"] };
+
 const hasCJK = (s: string) => /[㐀-鿿]/.test(s);
 
 export interface Prediction {
@@ -68,7 +70,10 @@ export function predict(input: string): Prediction {
   const text = input.toLowerCase();
   const scored = SEEDS.map((s) => {
     const matched = s.keywords.filter((k) => text.includes(k.toLowerCase()));
-    return { seed: s, matched, score: matched.length + (matched.some((k) => hasCJK(k) === hasCJK(input)) ? 0.5 : 0) };
+    // the product noun the user actually wrote (圍巾, scarf, 抱枕, ...) outranks mood words
+    const [en, zh] = SINGULAR[s.arcadeCategory] ?? ["", ""];
+    const nounHit = (zh && text.includes(zh)) || (en && new RegExp(`\\b${en.split(" ").pop()!.toLowerCase()}s?\\b`).test(text));
+    return { seed: s, matched, score: matched.length + (nounHit ? 3 : 0) + (matched.some((k) => hasCJK(k) === hasCJK(input)) ? 0.5 : 0) };
   })
     .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score);
@@ -86,7 +91,6 @@ export function predict(input: string): Prediction {
   const palette = vibe === best.vibe ? best.palette : (SEEDS.find((s) => s.vibe === vibe)?.palette ?? best.palette);
 
   // name: first clause of the user's words + the product noun from the best match
-  const SINGULAR: Record<string, [string, string]> = { "Decorative Pillows": ["Pillow", "抱枕"], "Outdoor Decorative Pillows": ["Outdoor Pillow", "戶外抱枕"], Scarves: ["Scarf", "圍巾"], "Table Runners": ["Table Runner", "桌旗"], "Drum Lampshades": ["Lampshade", "燈罩"], "Tall Drum Lampshades": ["Lampshade", "燈罩"], Duvets: ["Duvet", "被套"], Napkins: ["Napkin Set", "餐巾"], "Pocket Squares": ["Pocket Square", "口袋巾"], "Tea Towels": ["Tea Towel", "茶巾"], Curtains: ["Curtains", "窗簾"], "Floor Pillows": ["Floor Pillow", "坐墊"], Placemats: ["Placemats", "餐墊"], Quilts: ["Quilt", "拼布被"], "Fabric By The Yard": ["Fabric", "布料"], "Dainty Gemstone Ring": ["Ring", "戒指"], "Pendant Necklace": ["Necklace", "項鍊"], Shams: ["Shams", "枕套"] };
   const [nounEn, nounZh] = SINGULAR[best.arcadeCategory] ?? [best.arcadeCategory, best.arcadeCategory];
   const zh = hasCJK(input);
   const nounOut = zh ? nounZh : nounEn;
