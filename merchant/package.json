@@ -1,0 +1,33 @@
+{
+  "name": "mup-merchant",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --import tsx --test tests/services.test.ts",
+    "test:e2e": "node tests/merchant.e2e.mjs"
+  },
+  "dependencies": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-router-dom": "7.6.2",
+    "lucide-react": "0.468.0"
+  },
+  "devDependencies": {
+    "@types/react": "19.1.0",
+    "@types/react-dom": "19.1.0",
+    "@types/node": "22.15.0",
+    "tailwindcss": "3.4.14",
+    "typescript": "5.8.3",
+    "vite": "6.3.5",
+    "tsx": "4.19.4",
+    "postcss": "8.5.3",
+    "autoprefixer": "10.4.21"
+  },
+  "overrides": {
+    "esbuild": "0.25.1"
+  }
+}
