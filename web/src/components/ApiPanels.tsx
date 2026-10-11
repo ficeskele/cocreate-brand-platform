@@ -6,7 +6,7 @@ import type { Product } from '../data/mock';
 import { Button, Empty } from './ui';
 import { Icon } from './Icon';
 
-const who = (id: string) => ({ u_alice: 'alice', u_bob: 'bob' } as Record<string, string>)[id] ?? id;
+const who = (id: string) => ({ u_alice: 'alice', u_bob: 'bob', u_carol: 'carol' } as Record<string, string>)[id] ?? id;
 export const LiveTag = () => <span className="demo live">Backend</span>;
 
 export function ApiConversation({ p }: { p: Product }) {

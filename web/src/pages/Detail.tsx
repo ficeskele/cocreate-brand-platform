@@ -7,6 +7,7 @@ import { FollowButton, MinRoyaltyForm, PurchaseInterestForm, ShareButton, Versio
 import { Comments } from '../components/Comments';
 import { Icon } from '../components/Icon';
 import { ApiConversation, ApiCoauthors, ApiProposals, ApiRelease, LiveTag } from '../components/ApiPanels';
+import { RenderStatus } from '../components/RenderStatus';
 
 type T = 'conversation' | 'versions' | 'interest' | 'stores';
 export default function Detail() {
@@ -22,7 +23,7 @@ export default function Detail() {
     <div className="page detail">
       <Link to="/" className="back"><Icon name="back" size={18} />Explore</Link>
       <div className="detail-grid">
-        <div className="detail-media"><ProductImage p={p} ratio="1/1" /></div>
+        <div className="detail-media">{p.source === 'api' ? <RenderStatus p={p} /> : <ProductImage p={p} ratio="1/1" />}</div>
         <div className="detail-content">
           {p.parentId && <DerivedFrom p={p} />}
           <div className="detail-meta"><span>{p.category}</span><span aria-hidden>·</span><span>{p.parentId ? 'Version' : 'Original'}</span><StatusTag status={p.status} /></div>

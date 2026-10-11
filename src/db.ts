@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS store (
 );
 `);
 
-db.prepare(`INSERT OR IGNORE INTO user (id, handle) VALUES ('u_alice','alice'),('u_bob','bob')`).run();
+db.prepare(`INSERT OR IGNORE INTO user (id, handle) VALUES ('u_alice','alice'),('u_bob','bob'),('u_carol','carol')`).run();
 
 export const id = () => nanoid(12);
 /** Run `fn` inside one SQLite transaction; multi-row writes either all land or none do. */

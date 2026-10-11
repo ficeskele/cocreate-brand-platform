@@ -12,7 +12,7 @@ export interface Comment { id: string; productId: string; author: string; text: 
 const render = (f: string) => `${import.meta.env.BASE_URL}renders/${f}.svg`;
 
 export const people: Record<string, { name: string }> = {
-  u_alice: { name: 'alice' }, u_bob: { name: 'bob' }, anna: { name: 'Anna R.' }, lucas: { name: 'Lucas M.' }, sophie: { name: 'Sophie T.' }, mark: { name: 'Mark V.' }, 'arcade.ai': { name: 'arcade.ai' },
+  u_alice: { name: 'alice' }, u_bob: { name: 'bob' }, u_carol: { name: 'carol' }, anna: { name: 'Anna R.' }, lucas: { name: 'Lucas M.' }, sophie: { name: 'Sophie T.' }, mark: { name: 'Mark V.' }, 'arcade.ai': { name: 'arcade.ai' },
 };
 
 export const products: Product[] = [
