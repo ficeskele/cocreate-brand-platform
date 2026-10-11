@@ -24,6 +24,10 @@ const notFound = (c: Context, what: string) => c.json({ error: { code: "NOT_FOUN
 app.use("/images/*", serveStatic({ root: "./data" }));
 app.get("/health", (c) => c.json({ ok: true, service: "cocreate-brand-platform", arcade: "arcade.ai", mock_design: process.env.AGENT_MOCK_DESIGN === "1", claude: Boolean(process.env.ANTHROPIC_API_KEY) }));
 app.get("/", serveStatic({ path: "./public/index.html" }));
+// DropLab web (React, build en web/dist) servido en /app/*; la página "/" no cambia.
+app.get("/app", (c) => c.redirect("/app/"));
+app.use("/app/*", serveStatic({ root: "./web/dist", rewriteRequestPath: (p) => p.replace(/^\/app/, "") }));
+app.get("/app/*", serveStatic({ path: "./web/dist/index.html" })); // fallback SPA para URLs compartibles
 
 // ---- brands ----
 const BrandBody = z.object({

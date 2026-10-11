@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "web:install": "pnpm --dir web install",
+    "web:dev": "pnpm --dir web dev",
+    "web:build": "pnpm --dir web build",
+    "web:typecheck": "pnpm --dir web exec tsc -b"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.133.0",

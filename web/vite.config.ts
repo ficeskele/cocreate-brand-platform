@@ -1,0 +1,9 @@
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+// Servido por Hono en /app/*. En dev, /api → backend en :3456.
+export default defineConfig({
+  base: '/app/',
+  plugins: [react()],
+  server: { proxy: { '/api': { target: 'http://localhost:3456', changeOrigin: true, rewrite: p => p.replace(/^\/api/, '') } } },
+});
