@@ -77,6 +77,23 @@ function toProduct(view: ApiProductView, spec: ApiSpec | undefined, opts: { id: 
   };
 }
 
+/**
+ * Image files are plain <img> requests, which cannot carry the ngrok bypass header; behind the free
+ * ngrok tunnel they get the warning page instead of the PNG. Fetch them with the header and hand the
+ * <img> a blob URL. Cached per URL; harmless on localhost.
+ */
+const blobCache = new Map<string, Promise<string>>();
+export function tunnelSafeImage(url: string): Promise<string> {
+  if (!url.startsWith('/images/')) return Promise.resolve(url);
+  if (!blobCache.has(url)) {
+    blobCache.set(url, fetch(url, { headers: { 'ngrok-skip-browser-warning': '1' } })
+      .then(r => (r.ok && /^image\//.test(r.headers.get('content-type') ?? '') ? r.blob() : Promise.reject(new Error(String(r.status)))))
+      .then(b => URL.createObjectURL(b))
+      .catch(() => url));
+  }
+  return blobCache.get(url)!;
+}
+
 /** Brands/products become ideas; non-main branches with a head become derived versions. */
 export async function loadApiProducts(): Promise<{ products: Product[]; views: Record<string, ApiProductView> }> {
   const brands = await api.brands();
@@ -99,5 +116,6 @@ export async function loadApiProducts(): Promise<{ products: Product[]; views: R
       }
     }
   }
+  await Promise.all(products.map(async p => { p.image = await tunnelSafeImage(p.image); }));
   return { products, views };
 }
