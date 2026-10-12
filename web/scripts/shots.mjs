@@ -19,7 +19,7 @@ async function signin(p) { await p.goto(B + '/profile'); await p.getByRole('butt
 for (const [wn, w] of Object.entries(widths)) {
   if (only && only !== wn) continue;
   const ctx = await browser.newContext({ viewport: { width: w, height: w < 700 ? 844 : 1000 }, deviceScaleFactor: 1 });
-  const p = await ctx.newPage(); await p.addInitScript(() => sessionStorage.setItem('droplab-intro-seen', '1'));
+  const p = await ctx.newPage(); await p.addInitScript(() => sessionStorage.setItem('droplab-intro-skip', '1'));
   for (const [name, url, act] of pages) {
     await p.goto(B + url); await p.waitForLoadState('networkidle'); if (act) await act(p); await p.waitForTimeout(250);
     const o = await p.evaluate(() => { const over = [...document.querySelectorAll('body *')].filter(e => { const r = e.getBoundingClientRect(); return r.width > 0 && r.right > innerWidth + 1 && !e.closest('.table-wrap,.text-tabs,.tabs'); }).slice(0, 3).map(e => e.className || e.tagName); return { sw: document.documentElement.scrollWidth, iw: innerWidth, over }; });

@@ -11,7 +11,7 @@ import { Demo } from '../components/ui';
 // Landing in the spirit of the Mindloop template (MIT, see web/ATTRIBUTION.md):
 // hero → scroll-revealed mission → four-up features → CTA → footer.
 // Intro plays on every visit to the landing. Scripts set this sessionStorage key to skip it; ?intro forces it.
-const SEEN = 'droplab-intro-seen';
+const SKIP = 'droplab-intro-skip';
 
 function useFadeUp() {
   const reduce = useReducedMotion();
@@ -61,7 +61,7 @@ export default function Landing() {
   const fade = useFadeUp();
   const top = products.filter(p => p.source !== 'api').map(p => ({ p, net: p.votes.up - p.votes.down })).sort((a, b) => b.net - a.net).slice(0, 8);
   const items: WorksWheelItem[] = top.map(({ p, net }) => ({ title: `${p.title} · ${net}`, image: p.image, href: `${import.meta.env.BASE_URL}${urlOf(p).slice(1)}` }));
-  const [intro, setIntro] = React.useState(() => { try { return !sessionStorage.getItem(SEEN) || location.search.includes('intro'); } catch { return false; } });
+  const [intro, setIntro] = React.useState(() => { try { return !sessionStorage.getItem(SKIP) || location.search.includes('intro'); } catch { return false; } });
   const endIntro = () => setIntro(false);
   return (
     <div className="landing-ml">
