@@ -95,8 +95,7 @@ function LaunchProductDialog({ title, onClose, returnFocus }: { title: string; o
         <li><span className="launch-product-number">2</span><div><p className="launch-product-service">SHOPIFY</p><h3>Find a Seller &amp; Launch</h3><p>Shopify merchants can discover community-created designs, apply to sell them, and prepare a product listing after creator approval.</p></div></li>
         <li><span className="launch-product-number">3</span><div><p className="launch-product-service">ARCADE</p><h3>Make &amp; Ship</h3><p>Once customers purchase the product through Shopify, Arcade can handle on-demand manufacturing and shipping through a future integration.</p></div></li>
       </ol>
-      <p className="launch-product-disclaimer" role="note">Demo preview only. No real Shopify listing, manufacturing order, commission payment, or fulfillment is triggered.</p>
-      <div className="launch-product-footer"><span className="small muted">Planned flow · no external services connected</span><button type="button" className="btn btn-secondary" onClick={onClose}>Close</button></div>
+      <div className="launch-product-footer"><span /><button type="button" className="btn btn-secondary" onClick={onClose}>Close</button></div>
     </div>
   </dialog>;
 }

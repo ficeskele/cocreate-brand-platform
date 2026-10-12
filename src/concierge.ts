@@ -24,6 +24,13 @@ export const isConfirmation = (text: string) => CONFIRM.test(text);
 /** Build the agent's reply to a discussion message, plus the draft it proposes. */
 export function draftReply(text: string, spec: ProductSpec, author: string): { body: string; draft: Draft } {
   const pred = predict(`${text}. ${spec.concept}`);
+  // "make it blue" on a necklace must stay a necklace: keep the idea's category unless the message names a product
+  const NOUN = /\b(necklace|pendant|rings?|earr?ings?|studs?|scarf|scarves|pillow|cushion|lamp|lampshade|duvet|napkins?|placemats?|runner|tablecloth|curtains?|quilt|towel|shams?|fabric)\b/i;
+  if (spec.arcade?.categoryName && !NOUN.test(text)) {
+    pred.arcade.categoryName = spec.arcade.categoryName;
+    pred.arcade.modelId = spec.arcade.modelId ?? pred.arcade.modelId;
+    pred.arcade.selections = spec.arcade.selections ?? {};
+  }
   const sel = Object.keys(pred.arcade.selections).length ? Object.values(pred.arcade.selections).slice(0, 2).join(" ") : "";
   const instruction = `${text.trim().replace(/[.!?]+$/, "")}${pred.arcade.modelId ? `, style ${pred.arcade.modelId}` : ""}${sel ? `, ${sel}` : ""}, category ${pred.arcade.categoryName}`;
   // Name: the idea's current name plus the words that drove the match, e.g. "Clown Pillow (pastel, velvet)"

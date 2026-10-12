@@ -190,7 +190,7 @@ async function designWithClaude(ctx: DesignCtx): Promise<SubmitSpec> {
  * Pick the arcade.ai category for an instruction: an explicit "category X" wins, then a product noun
  * (necklace, ring, earrings, scarf, lampshade...), else Decorative Pillows. Works for print and jewelry.
  */
-async function resolveCategory(instruction: string, cats: arcade.Category[]) {
+async function resolveCategory(instruction: string, cats: arcade.Category[], inherited?: string | null) {
   const text = instruction.toLowerCase();
   const wanted = /category\s+([A-Za-z][A-Za-z ]+?)\s*(?:,|$)/i.exec(instruction)?.[1]?.trim().toLowerCase();
   const byName = wanted ? cats.find((c) => c.name.toLowerCase() === wanted) ?? cats.find((c) => c.name.toLowerCase().includes(wanted)) : undefined;
@@ -200,7 +200,8 @@ async function resolveCategory(instruction: string, cats: arcade.Category[]) {
     [/curtain/, /curtains/i], [/quilt/, /^quilts$/i], [/tea towel|towel/, /tea towels/i], [/sham|pillowcase/, /^shams$/i], [/floor pillow|floor cushion/, /floor pillows/i], [/outdoor/, /outdoor decorative pillows/i], [/pocket square/, /pocket squares/i], [/fabric|yard/, /fabric by the yard/i],
   ];
   const byNoun = NOUNS.map(([word, name]) => (word.test(text) ? cats.find((c) => name.test(c.name)) : undefined)).find(Boolean);
-  const cat = byName ?? byNoun ?? cats.find((c) => /decorative pillows/i.test(c.name)) ?? cats.find((c) => c.world === "print");
+  const byInherited = inherited ? cats.find((c) => c.name === inherited) : undefined; // a version stays in its original's category
+  const cat = byName ?? byNoun ?? byInherited ?? cats.find((c) => /decorative pillows/i.test(c.name)) ?? cats.find((c) => c.world === "print");
   if (!cat) throw new Error("arcade.ai returned no categories");
   const detail = await arcade.getCategory(cat.categoryId, {});
   const selections = { ...detail.selections };
@@ -282,7 +283,7 @@ export async function runConceptAgent(runId: string) {
     const cats = await arcade.listCategories();
     const styles = await arcade.listModels();
     if (process.env.AGENT_MOCK_DESIGN === "1") {
-      const { cat, selections } = await resolveCategory(agentRun.instruction, cats);
+      const { cat, selections } = await resolveCategory(agentRun.instruction, cats, inputSpec.arcade?.categoryName);
       submitted = simpleDesign(inputSpec, agentRun.instruction, cat.categoryId, cat.name, selections, cat.world === "jewelry");
       toolCalls.push({ tool: "simple_design", input: { instruction: agentRun.instruction }, output: submitted });
       setRun({ tool_calls: JSON.stringify(toolCalls) });
