@@ -10,7 +10,7 @@ import { Demo } from '../components/ui';
 
 // Landing in the spirit of the Mindloop template (MIT, see web/ATTRIBUTION.md):
 // hero → scroll-revealed mission → four-up features → CTA → footer.
-// Intro plays on every visit to the landing. Scripts set this sessionStorage key to skip it; ?intro forces it.
+// Intro plays on every visit and stays until clicked (duration 0 disables the auto-dismiss). Scripts set this sessionStorage key to skip it; ?intro forces it.
 const SKIP = 'droplab-intro-skip';
 
 function useFadeUp() {
@@ -66,8 +66,8 @@ export default function Landing() {
   return (
     <div className="landing-ml">
       {intro ? <AsciiLoader src={`${import.meta.env.BASE_URL}creation-of-adam-hands.jpg`} renderMode="dither" cellSize={9} contrast={158} density={20} coverage={100} bgMode="none"
-        animated animation="pulse" animSpeed={100} animIntensity={60} ink="#FFFFFF" paper="#000000" duration={1600}
-        title="We create together. Everyone wins." subtitle="Every idea gets better when someone else touches it." onDone={endIntro} /> : null}
+        animated animation="pulse" animSpeed={100} animIntensity={60} ink="#FFFFFF" paper="#000000" duration={0}
+        title="We create together. Everyone wins." subtitle="Every idea gets better when someone else touches it. Click anywhere to start." onDone={endIntro} /> : null}
 
       <section className="ml-hero" id="home">
         <div className="stack" style={{ gap: 24 }}>
