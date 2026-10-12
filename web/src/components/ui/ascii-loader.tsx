@@ -20,6 +20,7 @@ export interface AsciiLoaderProps {
   paper?: string;
   /** ms before fading out; set 0 to stay. */
   duration?: number;
+  fadeMs?: number;        // fade-out length once finished
   /** Minimum width/height of the shown crop; narrower frames crop to center. */
   minAspect?: number;
   title?: string;
@@ -33,7 +34,7 @@ const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(v => (v
 export function AsciiLoader({
   src, cellSize = 9, contrast = 158, density = 20, coverage = 100, bgMode = "none",
   animated = true, animSpeed = 100, animIntensity = 60, ink = "#FFFFFF", paper = "#000000",
-  duration = 1900, minAspect = 1.1, title, subtitle, onDone, className,
+  duration = 1900, fadeMs = 350, minAspect = 1.1, title, subtitle, onDone, className,
 }: AsciiLoaderProps) {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const [leaving, setLeaving] = React.useState(false);
@@ -43,8 +44,8 @@ export function AsciiLoader({
   const finish = React.useCallback(() => {
     if (done.current) return; done.current = true;
     setLeaving(true);
-    window.setTimeout(() => onDone?.(), reduced ? 0 : 350);
-  }, [onDone, reduced]);
+    window.setTimeout(() => onDone?.(), reduced ? 0 : fadeMs);
+  }, [onDone, reduced, fadeMs]);
 
   React.useEffect(() => {
     if (!duration) return;
@@ -108,8 +109,8 @@ export function AsciiLoader({
 
   return (
     <div role="status" aria-live="polite" aria-label={title ?? "Loading"} onClick={finish}
-      className={cn("fixed inset-0 z-[1000] flex cursor-pointer flex-col items-center justify-center transition-opacity duration-300", leaving && "pointer-events-none opacity-0", className)}
-      style={{ background: paper, color: ink }}>
+      className={cn("fixed inset-0 z-[1000] flex cursor-pointer flex-col items-center justify-center transition-opacity", leaving && "pointer-events-none opacity-0", className)}
+      style={{ background: paper, color: ink, transitionDuration: `${reduced ? 0 : fadeMs}ms` }}>
       <canvas ref={canvasRef} aria-hidden="true" className="block h-[58vh] w-full" />
       {title ? <p className="mt-6 text-center text-[clamp(1.5rem,4vw,2.5rem)] font-semibold tracking-tight">{title}</p> : null}
       {subtitle ? <p className="mt-2 px-6 text-center text-sm opacity-60">{subtitle}</p> : null}

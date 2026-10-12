@@ -66,7 +66,7 @@ export default function Landing() {
   return (
     <div className="landing-ml">
       {intro ? <AsciiLoader src={`${import.meta.env.BASE_URL}creation-of-adam-hands.jpg`} renderMode="dither" cellSize={9} contrast={158} density={20} coverage={100} bgMode="none"
-        animated animation="pulse" animSpeed={100} animIntensity={60} ink="#FFFFFF" paper="#000000" duration={0}
+        animated animation="pulse" animSpeed={50} animIntensity={60} ink="#FFFFFF" paper="#000000" duration={0} fadeMs={1500}
         title="We create together. Everyone wins." subtitle="Every idea gets better when someone else touches it. Click anywhere to start." onDone={endIntro} /> : null}
 
       <section className="ml-hero" id="home">
