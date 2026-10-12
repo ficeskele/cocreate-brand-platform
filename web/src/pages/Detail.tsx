@@ -63,7 +63,7 @@ export default function Detail() {
         )}
         {tab === 'stores' && p.source === 'api' && <ApiRelease p={p} />}
         {tab === 'stores' && p.source !== 'api' && (launched
-          ? <div className="panel store"><Icon name="store" /><div><h3>{proposal.merchant}</h3><p className="muted">Bike bag with bottle compartment · confirmed launch</p></div><a className="btn btn-secondary" href="#" onClick={e => e.preventDefault()}>Visit store (Demo)</a></div>
+          ? <div className="panel store"><Icon name="store" /><div><h3>{proposal.merchant}</h3><p className="muted">Clown cushion with cats · confirmed launch</p></div><a className="btn btn-secondary" href="#" onClick={e => e.preventDefault()}>Visit store (Demo)</a></div>
           : <Empty icon="store" title="Not in any store yet" text="When a store confirms a launch you will see it here. Follow the idea to find out." />)}
       </div>
       <p className="tiny muted">URL of this {p.parentId ? 'version' : 'idea'}: {urlOf(p)}</p>

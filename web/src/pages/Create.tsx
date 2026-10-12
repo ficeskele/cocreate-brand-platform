@@ -73,7 +73,7 @@ export default function Create({ kind }: { kind: 'idea' | 'version' }) {
       return;
     }
     const s = (parent ? parent.slug + '-' : '') + (d.title || 'new').toLowerCase().normalize('NFD').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '').slice(0, 40);
-    const np: Product = { id: 'u' + Date.now(), slug: s, parentId: parent?.id ?? null, title: d.title, author: 'me', category: d.category, status: 'Idea', image: parent?.image ?? `${import.meta.env.BASE_URL}renders/bottle-bag.svg`,
+    const np: Product = { id: 'u' + Date.now(), slug: s, parentId: parent?.id ?? null, title: d.title, author: 'me', category: d.category, status: 'Idea', image: parent?.image ?? `${import.meta.env.BASE_URL}renders/clowns-riding-cats.jpg`,
       need: d.need, description: d.description, usage: d.usage, change: d.change || undefined, reason: d.reason || undefined, features: d.features.split(',').map(x => x.trim()).filter(Boolean), votes: { up: 0, down: 0 }, followers: 0, createdAt: '2026-10-11',
       imageRights: [{ label: 'Own image', owner: 'me', commercialOk: false }, ...(parent ? [{ label: 'Inherited image', owner: parent.author, commercialOk: false }] : [])] };
     addProduct(np); if (d.selfVote) vote(np.id, 'up'); localStorage.removeItem(key);
@@ -88,8 +88,8 @@ export default function Create({ kind }: { kind: 'idea' | 'version' }) {
       {step === 0 && (kind === 'version' ? <>
         <div className="parent-ref"><img src={parent!.image} alt="" /><div><p className="small muted">Starting from</p><p>{parent!.title}</p><p className="tiny muted">Need, category, features and images (with their authorship) are inherited.</p></div></div>
         {fromC && <p className="assist"><Icon name="comment" size={16} />You are starting from feedback in a comment. Nothing is created automatically.</p>}
-        <Field label="What would you change?" error={err.change}><textarea rows={3} value={d.change} onChange={set('change')} placeholder="e.g. add a separate bottle compartment" /></Field>
-        <Field label="Why would that version serve you better?" error={err.reason}><textarea rows={3} value={d.reason} onChange={set('reason')} placeholder="e.g. avoid carrying a second bag on short trips" /></Field>
+        <Field label="What would you change?" error={err.change}><textarea rows={3} value={d.change} onChange={set('change')} placeholder="e.g. put the clowns on a darker ground" /></Field>
+        <Field label="Why would that version serve you better?" error={err.reason}><textarea rows={3} value={d.reason} onChange={set('reason')} placeholder="e.g. a cream cover shows every mark on a light sofa" /></Field>
       </> : <>
         <Field label="Describe it in one sentence" hint="That is all we need. We predict the rest; you can edit anything." error={err.need}><textarea rows={3} value={d.need} onChange={set('need')} placeholder="e.g. a pillow full of bright circus clowns to make my room go wild" /></Field>
         {backend === 'online'
@@ -106,7 +106,7 @@ export default function Create({ kind }: { kind: 'idea' | 'version' }) {
       {step === 1 && <>
         {parent && <ProductImage p={parent} ratio="16/9" />}
         <div className="row-btns"><Button variant="secondary" type="button"><Icon name="image" size={18} />Upload image</Button><Button variant="ghost" type="button">Add reference</Button></div>
-        <Field label="Name" error={err.title}><input value={d.title} onChange={set('title')} placeholder={kind === 'version' ? 'Version with a separate bottle compartment' : ''} /></Field>
+        <Field label="Name" error={err.title}><input value={d.title} onChange={set('title')} placeholder={kind === 'version' ? 'Version with clowns riding cats' : ''} /></Field>
         <Field label="Description" error={err.description}><textarea rows={3} value={d.description} onChange={set('description')} /></Field>
         <Field label="Category"><select value={d.category} onChange={set('category')}>{[...new Set([d.category, 'Mobility', 'Home', 'Garden', 'Travel'].filter(Boolean))].map(c => <option key={c}>{c}</option>)}</select></Field>
         <Field label="Desired features" hint="Comma-separated"><input value={d.features} onChange={set('features')} /></Field>
@@ -121,7 +121,7 @@ export default function Create({ kind }: { kind: 'idea' | 'version' }) {
       {step === 3 && <>
         {kind === 'version' && (parent!.source === 'api'
           ? <div className="compare"><figure><img src={parent!.image} alt="" /><figcaption>Original (stays as is)</figcaption></figure><figure className="on"><div className="pending-render" aria-hidden><span className="gen-orb" /><span>Rendered by arcade.ai after you publish</span></div><figcaption>Your version</figcaption></figure></div>
-          : <div className="compare"><figure><img src={parent!.image} alt="" /><figcaption>Original</figcaption></figure><figure className="on"><img src={parent!.image.replace('bike-bag.svg', 'bottle-bag.svg')} alt="" /><figcaption>Your version</figcaption></figure></div>)}
+          : <div className="compare"><figure><img src={parent!.image} alt="" /><figcaption>Original</figcaption></figure><figure className="on"><img src={parent!.image.replace('clown-pillow.jpg', 'clowns-riding-cats.jpg')} alt="" /><figcaption>Your version</figcaption></figure></div>)}
         {kind === 'version' && parent!.source === 'api' && <p className="assist"><Icon name="sparkle" size={16} />Publishing asks the agent to design this change and arcade.ai to render a real product (1 to 2 minutes). It becomes your own branch; the original never changes.</p>}
         <div className="panel"><h3>{d.title || 'Untitled'}</h3>{d.change && <p><strong>Change:</strong> {d.change}</p>}{d.reason && <p className="muted">Reason: {d.reason}</p>}<p className="small muted">{d.category} · Visibility: {d.visibility} · Own URL · starts with 0 votes</p></div>
         <div className="panel"><h3>Images and authorship</h3><p className="small">1 own image{parent ? ` · 1 inherited (author: ${parent.author === 'me' ? 'you' : parent.author})` : ''}</p>

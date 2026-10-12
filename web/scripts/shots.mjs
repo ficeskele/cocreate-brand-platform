@@ -3,13 +3,13 @@ const B = process.env.BASE_URL ?? 'http://localhost:3456/app';
 const widths = { mobile: 390, tablet: 834, desktop: 1440 };
 const only = process.argv[2];
 const pages = [
-  ['landing', '/', async p => { for (let y = 0; y < 6000; y += 300) { await p.evaluate(v => window.scrollTo(0, v), y); await p.waitForTimeout(120); } await p.evaluate(() => window.scrollTo(0, 0)); await p.waitForTimeout(400); }], ['feed', '/explore'], ['detail', '/i/bike-bag'], ['detail-version', '/i/bike-bag/v/bottle-pocket'],
-  ['signup', '/i/bike-bag', async p => { await p.getByRole('button', { name: 'Create version' }).click(); await p.waitForSelector('.modal'); }],
-  ['search', '/search', async p => { await p.fill('input', 'bike bag'); }],
+  ['landing', '/', async p => { for (let y = 0; y < 6000; y += 300) { await p.evaluate(v => window.scrollTo(0, v), y); await p.waitForTimeout(120); } await p.evaluate(() => window.scrollTo(0, 0)); await p.waitForTimeout(400); }], ['feed', '/explore'], ['detail', '/i/clown-pillow'], ['detail-version', '/i/clown-pillow/v/clowns-riding-cats'],
+  ['signup', '/i/clown-pillow', async p => { await p.getByRole('button', { name: 'Create version' }).click(); await p.waitForSelector('.modal'); }],
+  ['search', '/search', async p => { await p.fill('input', 'clown'); }],
   ['search-empty', '/search', async p => { await p.fill('input', 'folding umbrella'); }],
-  ['comments-pins', '/i/bike-bag/v/bottle-pocket?pin=1'],
-  ['interest', '/i/bike-bag/v/bottle-pocket?tab=interest'],
-  ['versions', '/i/bike-bag?tab=versions'],
+  ['comments-pins', '/i/clown-pillow/v/clowns-riding-cats?pin=1'],
+  ['interest', '/i/clown-pillow/v/clowns-riding-cats?tab=interest'],
+  ['versions', '/i/clown-pillow?tab=versions'],
   ['earnings', '/earnings'], ['notifications', '/notifications'], ['profile', '/profile'],
   ['feed-loading', '/state/loading'], ['feed-error', '/state/error'],
 ];
@@ -29,7 +29,7 @@ for (const [wn, w] of Object.entries(widths)) {
   // flows that need an account
   await signin(p);
   const flow = [
-    ['create-version-step1', '/create-version/bike-bag'], ['contributions', '/contributions'],
+    ['create-version-step1', '/create-version/clown-pillow'], ['contributions', '/contributions'],
   ];
   for (const [name, url] of flow) { await p.goto(B + url); await p.waitForTimeout(250); await p.screenshot({ path: `shots/${name}-${w}.png`, fullPage: true }); }
   await ctx.close();

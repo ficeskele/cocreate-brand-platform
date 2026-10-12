@@ -113,7 +113,7 @@ curl -s -X POST localhost:3456/brands/$BID/products -H 'content-type: applicatio
 
 http://localhost:3456/app/ opens the landing page (hero, wheel of top ideas, mission, CTA). Click **Explore** in the top nav, or open http://localhost:3456/app/explore directly.
 
-Expected: the "Explore" feed. Four **Demo** cards (bike bag, lamp, planter...) plus one card tagged **Backend**: "Clown Pillow" with a grey "No render yet" placeholder. The grey line under the title says "Connected to the backend".
+Expected: the "Explore" feed. Four **Demo** cards (clown cushion, clowns riding cats, pastel circus, chinoiserie; images are arcade.ai renders) plus one card tagged **Backend**: "Clown Pillow" with a grey "No render yet" placeholder. The grey line under the title says "Connected to the backend".
 
 ## 3. Open the idea and ask the agent
 
@@ -173,7 +173,7 @@ Prints a JSON summary and writes screenshots to `web/docs/screenshots/e2e-*.png`
 
 | Backend (real, from our API) | Demo (fake data from the PR) |
 |---|---|
-| Ideas tagged **Backend**, their image, title, description | Bike bag, lamp, planter ideas |
+| Ideas tagged **Backend**, their image, title, description | Clown cushion, pastel circus, chinoiserie ideas |
 | Conversation messages and `@agent:concept` runs | Votes, Follow, Share counts |
 | Versions: tree children, Open proposals, Co-authors | Interest tab, royalties, Earnings |
 | Stores: Create release, Open store (arcade.ai checkout) | Merchant mode (`/app/m`), Shopify preview |

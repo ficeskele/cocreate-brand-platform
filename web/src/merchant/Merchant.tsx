@@ -87,7 +87,7 @@ export function ShopifyPreview() {
     <h1>Import preview</h1><p className="lede">Review before creating the draft. <Demo>Simulated Shopify connection</Demo></p>
     <div className="shopify">
       <ProductImage p={p} ratio="16/9" />
-      <dl className="kv"><div><dt>Title</dt><dd>Bike bag with bottle compartment</dd></div><div><dt>Price</dt><dd>${proposal.retail}.00 <Demo /></dd></div><div><dt>Shopify status</dt><dd>Draft (unpublished)</dd></div><div><dt>Source</dt><dd>{p.title} · {personName(p.author)} · derived from {rootOf(p).title}</dd></div><div><dt>Images</dt><dd>{p.imageRights.length} with commercial permission</dd></div><div><dt>Tags</dt><dd>mobility, bike, droplab</dd></div></dl>
+      <dl className="kv"><div><dt>Title</dt><dd>Clown cushion with cats</dd></div><div><dt>Price</dt><dd>${proposal.retail}.00 <Demo /></dd></div><div><dt>Shopify status</dt><dd>Draft (unpublished)</dd></div><div><dt>Source</dt><dd>{p.title} · {personName(p.author)} · derived from {rootOf(p).title}</dd></div><div><dt>Images</dt><dd>{p.imageRights.length} with commercial permission</dd></div><div><dt>Tags</dt><dd>mobility, bike, droplab</dd></div></dl>
     </div>
     <label className="check"><input type="checkbox" checked={ok} onChange={e => setOk(e.target.checked)} />I confirm creating a draft in my store. I understand this is not a product launch.</label>
     <div className="row-btns"><Button variant="secondary" onClick={() => nav(-1)}>Back</Button><Button disabled={!ok} onClick={() => { const id = 'd' + Date.now(); addDraft({ id, productId: p.id, title: p.title, createdAt: 'today', launched: false }); nav(`/m/draft/${id}`); }}>Create draft</Button></div>
@@ -99,7 +99,7 @@ export function DraftCreated() {
   return <Guard><div className="page narrow center-page">
     <div className="success"><Icon name="check" size={28} /></div>
     <h1>{d.launched ? 'Launch confirmed' : 'Draft created (Demo)'}</h1>
-    <p className="lede">{d.launched ? 'We notified the people who follow the idea and enabled launch alerts.' : '“Bike bag with bottle compartment” is a draft in your store. It is not launched yet and the community is not notified.'}</p>
+    <p className="lede">{d.launched ? 'We notified the people who follow the idea and enabled launch alerts.' : '“Clown cushion with cats” is a draft in your store. It is not launched yet and the community is not notified.'}</p>
     <div className="row-btns"><Button variant="secondary" onClick={() => showToast('Opening Shopify (Demo)')}>Open in Shopify (Demo)</Button>{!d.launched && <Button onClick={() => launchDraft(d.id)}>Confirm launch</Button>}</div>
   </div></Guard>;
 }

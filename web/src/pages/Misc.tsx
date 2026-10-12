@@ -49,7 +49,7 @@ export function Earnings() {
       {t === 'royalties' ? <>
         <div className="panel">
           <div className="panel-head"><h3>Commercial proposal · {proposal.merchant}</h3><span className="status">Pending approval</span></div>
-          <p className="small muted">Version with a separate bottle compartment. Illustrative: no signed agreement and no payments.</p>
+          <p className="small muted">Version with clowns riding cats. Illustrative: no signed agreement and no payments.</p>
           <dl className="money"><div><dt>Retail price</dt><dd>${proposal.retail.toFixed(2)}</dd></div><div><dt>TOTAL royalty pool per unit</dt><dd>${proposal.royaltyPool.toFixed(2)}</dd></div></dl>
           <table className="split"><caption className="sr">Royalty pool split</caption><thead><tr><th>Contributor</th><th>Role</th><th>Per unit</th><th>Approval</th></tr></thead>
             <tbody>{proposal.split.map(s => { const ap = proposal.approvals.find(a => a.who === s.who)!; return <tr key={s.who}><td>{personName(s.who)}</td><td>{s.role}</td><td>${s.amount.toFixed(2)}</td><td><span className={`appr appr-${ap.state === 'Approved' ? 'approved' : 'pending'}`}>{ap.state}</span></td></tr>; })}</tbody>
